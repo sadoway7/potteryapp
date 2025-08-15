@@ -107,4 +107,4 @@ INSERT INTO market_attributes (attribute_name) VALUES
 ('Easy Parking');
 
 -- Informative message
-\echo 'Database schema created successfully.'
+-- The script will now end. The success message is handled by the migrate.js script.
