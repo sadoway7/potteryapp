@@ -2,35 +2,75 @@ const authService = require('../services/auth.service');
 
 const register = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required.' });
+    const { email, password, 'confirm-password': confirmPassword } = req.body;
+    
+    // Validate required fields
+    if (!email || !password || !confirmPassword) {
+      return res.status(400).render('register', {
+        error: 'All fields are required.',
+        email
+      });
     }
+    
+    // Validate password match
+    if (password !== confirmPassword) {
+      return res.status(400).render('register', {
+        error: 'Passwords do not match.',
+        email
+      });
+    }
+    
+    // Validate password strength
+    if (password.length < 8) {
+      return res.status(400).render('register', {
+        error: 'Password must be at least 8 characters.',
+        email
+      });
+    }
+    
     const user = await authService.register(email, password);
-    res.status(201).json({ message: 'User registered successfully.', userId: user.id });
+    res.redirect('/login?registered=true');
   } catch (error) {
-    // Since the DB isn't connected, we expect errors. For now, return success.
-    if (error.code === 'ECONNREFUSED') {
-      return res.status(201).json({ message: 'User registration simulated successfully.' });
+    if (error.message.includes('duplicate key value')) {
+      return res.status(409).render('register', {
+        error: 'Email already registered.',
+        email
+      });
     }
-    res.status(500).json({ message: 'Error registering user.', error: error.message });
+    res.status(500).render('register', {
+      error: 'Error registering user: ' + error.message,
+      email
+    });
   }
 };
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    // Validate required fields
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required.' });
+      return res.status(400).render('login', {
+        error: 'Email and password are required.',
+        email
+      });
     }
-    const { token } = await authService.login(email, password);
-    res.json({ message: 'Login successful.', token });
+    
+    const { token, userId } = await authService.login(email, password);
+    
+    // Set JWT as HTTP-only cookie
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600000 // 1 hour
+    });
+    
+    res.redirect('/dashboard');
   } catch (error) {
-    // Since the DB isn't connected, we expect errors. For now, return success.
-     if (error.code === 'ECONNREFUSED') {
-      return res.json({ message: 'Login simulated successfully.', token: 'fake-jwt-for-dev' });
-    }
-    res.status(401).json({ message: 'Invalid credentials.', error: error.message });
+    res.status(401).render('login', {
+      error: 'Invalid credentials',
+      email
+    });
   }
 };
 

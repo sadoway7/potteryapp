@@ -1,0 +1,3078 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+
+Additional Info:
+----------------
+
+================================================================
+Directory Structure
+================================================================
+.gitignore
+ARCHITECTURE.md
+DEPLOYMENT.md
+jest.config.js
+package.json
+PLANNING.md
+public/css/style.css
+public/js/main.js
+README.md
+src/controllers/auth.controller.js
+src/controllers/event.controller.js
+src/controllers/market.controller.js
+src/controllers/message.controller.js
+src/controllers/rating.controller.js
+src/controllers/trackedMarket.controller.js
+src/db/connection.js
+src/db/init.sql
+src/db/migrate.js
+src/middleware/auth.middleware.js
+src/routes/auth.routes.js
+src/routes/index.js
+src/routes/market.routes.js
+src/routes/view.routes.js
+src/server.js
+src/services/auth.service.js
+src/services/event.service.js
+src/services/market.service.js
+src/services/message.service.js
+src/services/rating.service.js
+src/services/trackedMarket.service.js
+src/views/dashboard.ejs
+src/views/discover.ejs
+src/views/index.ejs
+src/views/layouts/main.ejs
+src/views/login.ejs
+src/views/manage-market.ejs
+src/views/market.ejs
+src/views/register.ejs
+tests/auth.controller.test.js
+tests/auth.service.test.js
+tests/market.service.test.js
+tests/setup.js
+tests/trackedMarket.service.test.js
+
+================================================================
+Files
+================================================================
+
+================
+File: .gitignore
+================
+repomix
+
+================
+File: ARCHITECTURE.md
+================
+# Rumfor Market Tracker - Application Architecture
+
+This document outlines the architecture of the Rumfor Market Tracker application. It is intended to be a living document that is updated as the application evolves. Its purpose is to ensure the codebase remains organized, modular, and easy to maintain.
+
+## Guiding Principles
+
+1.  **Modularity:** Functionality is broken down into small, single-purpose modules. This makes the code easier to understand, test, and refactor.
+2.  **Separation of Concerns:** The application is divided into distinct layers (routes, controllers, services, models), each with a clear responsibility. This prevents business logic from leaking into the presentation layer, and database logic from leaking into the business layer.
+3.  **Lightweight Stack:** The technology stack is chosen to be efficient and compatible with a standard Node.js shared hosting environment (like Namecheap).
+
+## Directory Structure Overview
+
+The project is structured to separate concerns into different directories.
+
+-   **/public**: Contains all static assets that will be served directly to the client's browser.
+    -   `/css`: Stylesheets (CSS files).
+    -   `/js`: Client-side JavaScript files.
+    -   `/images`: Static images (logos, icons, etc.).
+
+-   **/src**: Contains all the application's source code.
+    -   `/controllers`: Handles the incoming HTTP requests, validates input, and calls the appropriate service to handle the business logic. It then sends the response back to the client. **Controllers should not contain direct database access.**
+    -   `/db`: Manages the database connection and holds migration files. This is the single source of truth for database schema and connectivity.
+    -   `/middleware`: Contains Express middleware functions, such as authentication checks or logging.
+    -   `/models`: Defines the data structures (schemas) for the database tables. This layer is responsible for how data is structured but not for querying it.
+    -   `/routes`: Defines the API endpoints and maps them to the corresponding controller functions. This is the entry point for all API requests.
+    -   `/services`: Contains the core business logic of the application. Services are called by controllers and are responsible for orchestrating data from models to perform specific tasks. **All database queries should be initiated from this layer.**
+    -   `/utils`: Holds utility functions that can be reused across the application (e.g., date formatters, password hashing).
+    -   `/views`: Contains the EJS template files used for server-side rendering of the UI.
+
+-   **/tests**: Contains all the test files for the application.
+
+-   **server.js**: The main entry point for the application. It initializes the Express server, sets up middleware, and starts listening for requests.
+
+## Data Flow
+
+A typical request-response cycle follows this pattern:
+
+1.  **Request:** A client sends an HTTP request to an endpoint (e.g., `POST /api/markets`).
+2.  **Routing (`/src/routes`):** The Express router matches the endpoint to a specific controller function.
+3.  **Controller (`/src/controllers`):** The controller function receives the request. It extracts and validates data from the request body/params. It then calls a service function to perform the required action, passing the validated data.
+4.  **Service (`/src/services`):** The service contains the business logic. It interacts with one or more database models to fetch or save data. For example, it might call the `Market` model to create a new market entry in the database.
+5.  **Model (`/src/models`):** This layer defines the data schema but the actual query is executed by the service via the database connection.
+6.  **Response:** The service returns data (or a success/error status) to the controller. The controller then formats this into an HTTP response and sends it back to the client (either as JSON for an API call or by rendering an EJS view).
+
+This structured approach ensures that the application is robust, scalable, and easy for any developer to understand.
+
+## Database Schema
+
+The database is the backbone of the application. The schema is designed to be relational and expandable.
+
+### Table: `users`
+
+Stores user account information.
+
+-   `id`: SERIAL PRIMARY KEY
+-   `email`: VARCHAR(255) UNIQUE NOT NULL
+-   `password_hash`: VARCHAR(255) NOT NULL
+-   `created_at`: TIMESTAMPTZ DEFAULT NOW()
+
+### Table: `markets`
+
+Stores the public profiles for all markets. This is the central "template" for a market.
+
+-   `id`: SERIAL PRIMARY KEY
+-   `name`: VARCHAR(255) NOT NULL
+-   `description`: TEXT
+-   `address`: VARCHAR(255)
+-   `latitude`: DECIMAL(9, 6)
+-   `longitude`: DECIMAL(9, 6)
+-   `contact_email`: VARCHAR(255)
+-   `website`: VARCHAR(255)
+-   `created_by_user_id`: INTEGER REFERENCES users(id)
+-   `created_at`: TIMESTAMPTZ DEFAULT NOW()
+
+### Table: `market_dates`
+
+Stores recurring date/time information for a market.
+
+-   `id`: SERIAL PRIMARY KEY
+-   `market_id`: INTEGER REFERENCES markets(id) ON DELETE CASCADE
+-   `day_of_week`: VARCHAR(20) -- e.g., "Saturday"
+-   `start_time`: TIME
+-   `end_time`: TIME
+-   `season_start`: DATE
+-   `season_end`: DATE
+
+### Table: `market_attributes`
+
+Stores the predefined positive attributes that vendors can vote on.
+
+-   `id`: SERIAL PRIMARY KEY
+-   `attribute_name`: VARCHAR(100) UNIQUE NOT NULL -- e.g., "Good for Crafts", "High Foot Traffic"
+
+### Table: `market_attribute_votes`
+
+A join table to track user votes on market attributes.
+
+-   `id`: SERIAL PRIMARY KEY
+-   `user_id`: INTEGER REFERENCES users(id) ON DELETE CASCADE
+-   `market_id`: INTEGER REFERENCES markets(id) ON DELETE CASCADE
+-   `attribute_id`: INTEGER REFERENCES market_attributes(id) ON DELETE CASCADE
+-   UNIQUE (`user_id`, `market_id`, `attribute_id`)
+
+### Table: `tracked_markets`
+
+A user's private record of a market they are tracking.
+
+-   `id`: SERIAL PRIMARY KEY
+-   `user_id`: INTEGER REFERENCES users(id) ON DELETE CASCADE
+-   `market_id`: INTEGER REFERENCES markets(id) ON DELETE CASCADE
+-   `status`: VARCHAR(50) NOT NULL DEFAULT 'Interested' -- e.g., 'Interested', 'Application Sent', 'Approved', 'Complete', or a custom status
+-   UNIQUE (`user_id`, `market_id`)
+
+### Table: `custom_statuses`
+
+Stores custom statuses created by users.
+
+-   `id`: SERIAL PRIMARY KEY
+-   `user_id`: INTEGER REFERENCES users(id) ON DELETE CASCADE
+-   `status_name`: VARCHAR(50) NOT NULL
+-   UNIQUE (`user_id`, `status_name`)
+
+### Table: `tracked_market_events`
+
+Stores the private logs for each day a vendor attends a market.
+
+-   `id`: SERIAL PRIMARY KEY
+-   `tracked_market_id`: INTEGER REFERENCES tracked_markets(id) ON DELETE CASCADE
+-   `event_date`: DATE NOT NULL
+-   `sales_total`: DECIMAL(10, 2)
+-   `costs_total`: DECIMAL(10, 2)
+-   `private_notes`: TEXT
+-   `created_at`: TIMESTAMPTZ DEFAULT NOW()
+
+### Table: `message_board_posts`
+
+Stores posts for the public message board of each market.
+
+-   `id`: SERIAL PRIMARY KEY
+-   `market_id`: INTEGER REFERENCES markets(id) ON DELETE CASCADE
+-   `user_id`: INTEGER REFERENCES users(id) ON DELETE CASCADE
+-   `content`: TEXT NOT NULL
+-   `parent_post_id`: INTEGER REFERENCES message_board_posts(id) ON DELETE CASCADE -- For threaded replies
+-   `created_at`: TIMESTAMPTZ DEFAULT NOW()
+
+================
+File: DEPLOYMENT.md
+================
+# Deployment Instructions for Namecheap Shared Hosting
+
+This guide provides step-by-step instructions on how to deploy the Market Tracker application to your Namecheap shared hosting account using SSH and Git.
+
+## Prerequisites
+
+-   Your Namecheap shared hosting account credentials (cPanel login).
+-   The application code pushed to a Git repository (e.g., on GitHub).
+-   An SSH client installed on your local machine (standard on macOS and Linux; you can use PuTTY or Windows Terminal on Windows).
+
+---
+
+## Part 1: Connecting to Namecheap via SSH
+
+First, you need to enable and connect to your server via SSH. This gives you command-line access to your hosting environment.
+
+1.  **Find Your SSH Credentials:**
+    *   Log in to your Namecheap account and go to your cPanel.
+    *   In the "Security" section, click on **"SSH Access"**.
+    *   This page will show your cPanel username, the server's IP address, and the required SSH Port. **The port will likely be a four-digit number, not the standard port 22.** Note these details down.
+
+2.  **Connect from Your Local Machine:**
+    *   Open your terminal (or SSH client).
+    *   Use the following command format, replacing the placeholders with your details:
+        ```bash
+        ssh YOUR_CPANEL_USERNAME@YOUR_DOMAIN.com -p SSH_PORT
+        ```
+        *Example: `ssh rumfor@rumfor.com -p 21098`*
+    *   You will be prompted for your cPanel password. When you type it, you won't see any characters. Press Enter when done.
+    *   If successful, you will see a command prompt for your server.
+
+**(Recommended) For more security and convenience, set up SSH keys instead of using a password. You can do this from the same "SSH Access" page in cPanel by generating a key and authorizing it.**
+
+---
+
+## Part 2: Cloning the Repository with Git
+
+The easiest way to get your code onto the server is by using cPanel's built-in Git tool.
+
+1.  In cPanel, find the "Files" section and click on **"Git™ Version Control"**.
+2.  Click the **"Create"** button.
+3.  **Clone URL:** Paste the `https-` or `ssh-` URL of your Git repository.
+4.  **Repository Path:** This is where the files will be stored on the server. A good practice is to keep it organized. Example: `/home/YOUR_CPANEL_USERNAME/apps/market-tracker`.
+5.  **Repository Name:** This is just a label for cPanel, e.g., "Market Tracker App".
+6.  Click **"Create"**. cPanel will now clone your repository from GitHub (or another provider) into the specified path.
+
+---
+
+## Part 3: Setting Up the Node.js Application
+
+cPanel has a dedicated tool for running Node.js applications.
+
+1.  Go back to the main cPanel page. In the "Software" section, click on **"Setup Node.js App"**.
+2.  Click **"Create Application"**.
+3.  **Node.js version:** Select the latest available version (e.g., 16.x, 18.x).
+4.  **Application mode:** Set to "Production".
+5.  **Application root:** Set this to the **exact path** where you just cloned your repository. *Example: `/home/rumfor/apps/market-tracker`*.
+6.  **Application URL:** Select your domain (`rumfor.com`) from the dropdown. This will make the app live on that URL.
+7.  **Application startup file:** Enter `src/server.js`.
+8.  Click **"Create"**. The page will refresh, and your application will be registered but not yet running correctly.
+
+9.  **Install Dependencies:**
+    *   At the top of the app's configuration page, you will see a command to enter the virtual environment. It will look like this: `source /home/YOUR_CPANEL_USERNAME/nodevenv/YOUR_APP_ROOT/XX/bin/activate`.
+    *   Connect via SSH (from Part 1).
+    *   Navigate to your application's directory:
+        ```bash
+        cd ~/apps/market-tracker
+        ```
+    *   Run the `npm install` command to install all the dependencies from `package.json`:
+        ```bash
+        npm install
+        ```
+        *(Note: cPanel's Node.js environment automatically links the `npm` command, so you usually don't need the full path here once you're in the directory.)*
+
+---
+
+## Part 4: Setting Up the Database
+
+1.  **Create the Database (if you haven't):**
+    *   In cPanel, go to "Databases" -> **"PostgreSQL Databases"**.
+    *   Create a new database (e.g., `xsoucsnq_rumfor`).
+    *   Create a new user and give it a strong password (e.g., `xsoucsnq_rumforuser`).
+    *   Add the user to the database and grant it "All Privileges".
+2.  **Run the Migration:**
+    *   Connect to your server via SSH and navigate to your app's directory.
+    *   Run the migration script using the `npm` script we created:
+        ```bash
+        npm run db:migrate
+        ```
+    *   This will create all the necessary tables in your database.
+
+---
+
+## Part 5: Setting Environment Variables
+
+Do not rely on the `.env` file for production. Use cPanel's interface to set variables securely.
+
+1.  Go back to the **"Setup Node.js App"** page and find your application.
+2.  Scroll down to the **"Environment Variables"** section.
+3.  Add the following variables one by one:
+    *   `DB_HOST`: `localhost` (usually correct on cPanel)
+    *   `DB_USER`: Your database username (e.g., `xsoucsnq_rumforuser`)
+    *   `DB_PASSWORD`: Your database password
+    *   `DB_DATABASE`: Your database name (e.g., `xsoucsnq_rumfor`)
+    *   `DB_PORT`: `5432` (default for PostgreSQL)
+    *   `JWT_SECRET`: A long, random, secret string for signing tokens.
+    *   `NODE_ENV`: `production`
+
+---
+
+## Part 6: Starting the Application
+
+1.  On the "Setup Node.js App" page, click the **"Restart"** button at the top right.
+2.  This will restart your application with the correct dependencies and environment variables.
+3.  Visit `rumfor.com`. Your application should now be live!
+
+---
+
+## Part 7: Updating the Application in the Future
+
+When you have new code to deploy:
+
+1.  Push your local changes to your main branch on GitHub.
+2.  In cPanel, go to **"Git™ Version Control"**.
+3.  Click **"Manage"** next to your repository.
+4.  Select the **"Pull or Deploy"** tab.
+5.  Click **"Update from Remote"** to pull the latest changes.
+6.  If you changed `package.json` (e.g., added a new dependency), you must SSH in and run `npm install` again.
+7.  Go to **"Setup Node.js App"** and **"Restart"** your application to make the changes live.
+
+================
+File: jest.config.js
+================
+module.exports = {
+  testEnvironment: 'node',
+  verbose: true,
+  roots: ['<rootDir>/tests'],
+  testMatch: ['**/*.test.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+};
+
+================
+File: package.json
+================
+{
+  "name": "rumfor-market-tracker",
+  "version": "1.0.0",
+  "description": "A web application for market vendors to track markets, sales, and community data.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "db:migrate": "node src/db/migrate.js"
+  },
+  "keywords": [
+    "market",
+    "vendor",
+    "tracker"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-ejs-layouts": "^2.5.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
+
+================
+File: PLANNING.md
+================
+# Rumfor Market Tracker - AI-Managed Todo Planning System
+
+This document serves as the central planning and tracking system for the Rumfor Market Tracker project. It is designed to be continuously updated and referenced by the AI assistant to ensure efficient and organized project management.
+
+---
+
+## Table of Contents
+1.  [DO NOT UPDATE - Core Instructions](#1-do-not-update---core-instructions)
+2.  [DO NOT UPDATE - AI Workflow Rules](#2-do-not-update---ai-workflow-rules)
+3.  [DO NOT UPDATE - Task Templates](#3-do-not-update---task-templates)
+4.  [Project Overview](#4-project-overview)
+5.  [Current Active Tasks](#5-current-active-tasks)
+6.  [Blocked Tasks](#6-blocked-tasks)
+7.  [Upcoming/Planned Tasks](#7-upcomingplanned-tasks)
+8.  [Recently Completed Tasks](#8-recently-completed-tasks)
+9.  [File Structure Documentation](#9-file-structure-documentation)
+10. [Progress Metrics](#10-progress-metrics)
+11. [Cross-Reference Index](#11-cross-reference-index)
+12. [Archived Completed Tasks](#12-archived-completed-tasks)
+
+---
+
+## 1. DO NOT UPDATE - Core Instructions
+
+```
+This block contains permanent rules for the AI-managed todo system. DO NOT MODIFY its content.
+
+Purpose: These instructions define the fundamental operating principles and data integrity rules for the todo system. They are like a constitution, ensuring consistency and reliability.
+
+Rules:
+- Always read this file after each task completion or significant interaction to ensure the system is up-to-date.
+- Statuses can only be one of the following: `not-started`, `in-progress`, `completed`, `blocked`, `on-hold`.
+- Task IDs must be unique and follow the format `TASK-XXX` (e.g., TASK-001).
+- All required fields for tasks must be populated.
+- Maintain a single-level markdown checklist for tasks.
+```
+
+### 1.1. Task Dependency Logic
+
+```
+Rules for task relationships and dependencies. DO NOT MODIFY this section.
+
+- A task with dependencies cannot move to `in-progress` or `completed` status until ALL its listed dependencies are `completed`.
+- Dependencies must be clearly marked with task IDs in the `Dependencies` field.
+- Circular dependencies are strictly prohibited. The AI must detect and flag any attempts to create circular dependencies.
+- If a task fails or is reverted, automatically review and update the status of any tasks that depend on it (e.g., change to `blocked`).
+- When a task is marked `completed`, the AI must immediately check all other tasks in the system. For any task whose dependencies now allow it to proceed, its status should be updated from `blocked` or `not-started` to `not-started` (if it was blocked) or `in-progress` (if it's the next logical step and no other dependencies exist).
+```
+
+### 1.2. Status Definitions
+
+```
+Exact meaning of each status level. DO NOT MODIFY this section.
+
+- `not-started`: Task has been identified but no work has begun. It is awaiting its turn or dependencies.
+- `in-progress`: Active work is currently being done on this task.
+- `completed`: Task is fully finished, verified working, and all acceptance criteria have been met.
+- `blocked`: Task cannot proceed due to an external dependency, an unresolved issue, or a missing prerequisite. The `Notes` section should explain the blocking reason.
+- `on-hold`: Task is intentionally paused. This is not due to a blocking issue but a strategic decision to defer work.
+```
+
+### 1.3. Formatting Rules
+
+```
+Template and standards for consistent task formatting. DO NOT MODIFY this section.
+
+Task Template:
+## TASK-XXX: [Title] | Status: [status] | Priority: [high/medium/low] | Dependencies: [task-ids] | Estimated: [time] | Actual: [time] | Created: [date] | Updated: [date]
+
+Required Fields:
+- ID: Unique identifier (e.g., TASK-001)
+- Title: Short descriptive name
+- Status: Current state (`not-started`, `in-progress`, `completed`, `blocked`, `on-hold`)
+- Priority: `high`, `medium`, `low`
+- Dependencies: Comma-separated list of task IDs (e.g., `TASK-005, TASK-012`) or `None`
+- Created: Date when the task was created (YYYY-MM-DD)
+- Updated: Date when the task was last updated (YYYY-MM-DD)
+
+Optional Fields:
+- Estimated: Time estimate for completion (e.g., `4h`, `2d`)
+- Actual: Time actually spent when completed (e.g., `3.5h`, `2.5d`)
+- Assigned Area: Which part of project this belongs to (e.g., `Backend`, `Frontend`, `Database`)
+- Related Files: Files that will be created, modified, or referenced (e.g., `src/server.js`, `public/css/style.css`)
+- Tags: Searchable labels (e.g., `#backend`, `#frontend`, `#database`, `#security`, `#UI/UX`)
+- Notes: Additional context, rationale, or specific instructions.
+- Acceptance Criteria: Clear requirements for task completion.
+```
+
+---
+
+## 2. DO NOT UPDATE - AI Workflow Rules
+
+```
+Mandatory procedures the AI must follow for maintaining this planning system. DO NOT MODIFY this section.
+
+Purpose: These rules ensure the AI consistently manages the todo system, keeping it accurate and useful.
+```
+
+### 2.1. Always Read After Task
+
+```
+Hardcoded habit that happens after every single task completion. DO NOT MODIFY this section.
+
+Procedure:
+- No matter what task was just finished (whether it was a code change, a file read, or a command execution), immediately open and review this `PLANNING.md` file.
+- This is a mandatory checklist that happens automatically after every tool use.
+- This ensures nothing falls through the cracks and the system stays current.
+- Even for small tasks, this review step is required.
+```
+
+### 2.2. Update Process
+
+```
+Standardized procedure for maintaining task information. DO NOT MODIFY this section.
+
+Steps:
+1.  **When starting a task:**
+    *   Change its `Status` to `in-progress`.
+    *   Update the `Updated` timestamp.
+    *   Add a start timestamp to the `Completion Log` if tracking `Actual` time.
+2.  **When completing a task:**
+    *   Change its `Status` to `completed`.
+    *   Update the `Updated` timestamp.
+    *   Add a completion timestamp and a summary of work accomplished to the `Completion Log`.
+    *   Update `Actual` time spent vs `Estimated` time.
+    *   Check if any dependent tasks can now start and update their status accordingly (from `blocked` to `not-started`, or `not-started` to `in-progress` if it's the next logical step).
+    *   Add any lessons learned or important notes to the `Completion Log`.
+    *   Cross-reference other tasks that might be affected by this completion in the `Completion Log` and `Cross-Reference Index`.
+3.  **When a task becomes blocked:**
+    *   Change its `Status` to `blocked`.
+    *   Update the `Updated` timestamp.
+    *   Add a note to the `Notes` section explaining the blocking reason and what needs to be resolved.
+```
+
+### 2.3. New Task Creation
+
+```
+System for adding tasks discovered during work. DO NOT MODIFY this section.
+
+Process:
+- Use the standard task template from the `Formatting Rules` section.
+- Assign appropriate `Priority` based on impact and urgency.
+- Identify any `Dependencies` on existing tasks.
+- Add to the correct section (`Current Active Tasks`, `Upcoming/Planned Tasks`, or `Blocked Tasks`).
+- Update `Project Overview` if this represents a significant scope change.
+- Cross-reference with related existing tasks in the `Cross-Reference Index`.
+- Assign a new, unique `TASK-XXX` ID.
+```
+
+### 2.4. Maintenance Tasks
+
+```
+Regular housekeeping to ensure system accuracy. DO NOT MODIFY this section.
+
+Scheduled Activities:
+- **Weekly:** File structure verification and updates in `File Structure Documentation`.
+- **Monthly:** Review of `Recently Completed Tasks` for lessons learned and potential process improvements.
+- **Quarterly:** Assessment of task estimation accuracy (compare `Estimated` vs `Actual` times).
+- **Periodic:** Cleanup of outdated `Cross-Reference Index` entries.
+- **Regular:** Validation that all task dependencies still make sense and are correctly linked.
+- **As Needed:** Archive old `completed` tasks to `Archived Completed Tasks` to keep active lists manageable.
+```
+
+---
+
+## 3. DO NOT UPDATE - Task Templates
+
+```
+Templates for creating new tasks and logging completion. DO NOT MODIFY this section.
+```
+
+### 3.1. New Task Template
+
+```markdown
+## TASK-XXX: [Title]
+**Status:** [status]
+**Priority:** [level]
+**Dependencies:** [task-ids]
+**Estimated:** [time]
+**Created:** [YYYY-MM-DD]
+**Updated:** [YYYY-MM-DD]
+**Assigned Area:** [e.g., Backend, Frontend, Database, DevOps]
+**Related Files:** [list/of/files.ext]
+**Tags:** [#tag1 #tag2]
+**Description:**
+[Detailed description of the task, what needs to be done, and why.]
+
+**Acceptance Criteria:**
+- [ ] Criterion 1
+- [ ] Criterion 2
+
+**Notes:**
+[Any additional context, considerations, or specific instructions.]
+```
+
+### 3.2. Completion Log Template
+
+```markdown
+**[YYYY-MM-DD HH:MM:SS UTC]** - Status changed to [status]
+- **Summary:** [What was accomplished in detail.]
+- **Time spent:** [Actual time spent on this task, e.g., 3.5h]
+- **Notes:** [Any discoveries, issues encountered, or decisions made and rationale.]
+- **Impact:** [Effects on other tasks, e.g., "Unblocked TASK-005, TASK-006."]
+```
+
+---
+
+## 4. Project Overview
+
+**Current Phase:** Planning & Initial Development
+**Major Milestones Achieved:**
+- Initial project setup and repository cloning.
+- Basic understanding of project vision and core concepts established.
+- `.gitignore` created and `repomix` added.
+**Upcoming Milestones:**
+- Implement user authentication (registration, login).
+- Develop core market discovery functionality.
+- Set up basic market tracking.
+**Current Focus Areas:** Establishing foundational components and understanding the existing codebase.
+**Overall Progress:** ~5% (Initial setup and documentation review)
+**Recent Accomplishments:**
+- Defined project scope and architecture.
+- Created comprehensive developer handover documentation.
+**Next Major Goals:** Implement user authentication and basic market CRUD operations.
+**Known Risks:**
+- Database connection issues during local development/deployment.
+- Complexity of real-time updates for message boards and attribute voting.
+- Ensuring mobile-first design principles are consistently applied.
+**Mitigation Strategies:**
+- Thorough testing of database connections in dev and production.
+- Prioritizing core functionality before advanced real-time features.
+- Regular UI/UX reviews and testing on various mobile devices.
+**Resource Allocation:** Currently, AI is the primary resource.
+**Timeline Information:** Initial development phase estimated for 2-4 weeks for core MVP.
+
+---
+
+## 5. Current Active Tasks
+
+### TASK-001: Create AI-Managed Todo Planning System | Status: completed | Priority: high | Dependencies: None | Estimated: 1h | Actual: 0.5h | Created: 2025-08-15 | Updated: 2025-08-15
+**Assigned Area:** Project Management
+**Related Files:** [`PLANNING.md`](PLANNING.md)
+**Tags:** `#documentation #project-management #ai-workflow`
+**Description:**
+Create a comprehensive AI-managed todo planning system as a Markdown file, adhering to all specified requirements for protected instruction blocks, dynamic content sections, AI workflow rules, and Markdown structure.
+
+**Acceptance Criteria:**
+- [x] Markdown file `PLANNING.md` created.
+- [x] All protected instruction blocks (Core Instructions, AI Workflow Rules, Task Templates) are present and marked "DO NOT UPDATE".
+- [x] All dynamic content sections (Project Overview, Task Lists, File Structure Documentation, Progress Metrics, Cross-Reference Index) are present.
+- [x] At least 5 sample tasks with different statuses and dependencies are included.
+- [x] All sections are populated with realistic examples.
+- [x] The system is immediately usable by the AI.
+
+**Notes:**
+This task was initiated by the user's request to create this planning system.
+
+**Completion Log:**
+**2025-08-15 15:50:00 UTC** - Status changed to in-progress
+- **Summary:** Started creating the `PLANNING.md` file based on the provided requirements.
+- **Time spent:** 0.1h
+- **Notes:** Outlined the main sections and began populating the protected blocks.
+- **Impact:** Initiated the project's formal planning system.
+
+**2025-08-15 15:50:00 UTC** - Status changed to completed
+- **Summary:** Completed the creation of `PLANNING.md`, including all protected blocks, dynamic sections, and sample tasks as per the requirements.
+- **Time spent:** 0.4h
+- **Notes:** Ensured all formatting rules and templates were applied correctly.
+- **Impact:** Established the foundational planning document for the project.
+
+### TASK-002: Implement User Registration | Status: not-started | Priority: high | Dependencies: None | Estimated: 3h | Actual: | Created: 2025-08-15 | Updated: 2025-08-15
+**Assigned Area:** Backend, Frontend
+**Related Files:** [`src/controllers/auth.controller.js`](src/controllers/auth.controller.js), [`src/services/auth.service.js`](src/services/auth.service.js), [`src/routes/auth.routes.js`](src/routes/auth.routes.js), [`src/views/register.ejs`](src/views/register.ejs), [`src/db/connection.js`](src/db/connection.js), [`src/db/init.sql`](src/db/init.sql)
+**Tags:** `#authentication #backend #frontend #database`
+**Description:**
+Implement the user registration functionality, allowing new users to create an account with an email and password. This involves updating the backend service and controller, as well as ensuring the frontend form correctly submits data.
+
+**Acceptance Criteria:**
+- [ ] New users can successfully register via the `/register` page.
+- [ ] Passwords are securely hashed before storage.
+- [ ] Duplicate email registration is handled gracefully.
+- [ ] Appropriate API responses are returned.
+
+**Notes:**
+The `auth.controller.js` and `auth.service.js` already have placeholder logic. This task involves making them functional with the PostgreSQL database.
+
+### TASK-003: Implement User Login | Status: not-started | Priority: high | Dependencies: TASK-002 | Estimated: 2.5h | Actual: | Created: 2025-08-15 | Updated: 2025-08-15
+**Assigned Area:** Backend, Frontend
+**Related Files:** [`src/controllers/auth.controller.js`](src/controllers/auth.controller.js), [`src/services/auth.service.js`](src/services/auth.service.js), [`src/routes/auth.routes.js`](src/routes/auth.routes.js), [`src/views/login.ejs`](src/views/login.ejs), [`src/middleware/auth.middleware.js`](src/middleware/auth.middleware.js)
+**Tags:** `#authentication #backend #frontend #security`
+**Description:**
+Implement the user login functionality, allowing registered users to authenticate and receive a JWT. This includes validating credentials and integrating with the authentication middleware.
+
+**Acceptance Criteria:**
+- [ ] Registered users can successfully log in via the `/login` page.
+- [ ] Invalid credentials result in an appropriate error.
+- [ ] A valid JWT is returned upon successful login.
+- [ ] The authentication middleware correctly processes JWTs.
+
+**Notes:**
+This task depends on `TASK-002` as registration must be functional first.
+
+---
+
+## 6. Blocked Tasks
+
+### TASK-004: Develop Market Creation API | Status: blocked | Priority: medium | Dependencies: TASK-003 | Estimated: 4h | Actual: | Created: 2025-08-15 | Updated: 2025-08-15
+**Assigned Area:** Backend, Database
+**Related Files:** [`src/controllers/market.controller.js`](src/controllers/market.controller.js), [`src/services/market.service.js`](src/services/market.service.js), [`src/routes/market.routes.js`](src/routes/market.routes.js), [`src/db/init.sql`](src/db/init.sql)
+**Tags:** `#api #crud #database`
+**Description:**
+Create the API endpoint and backend logic for authenticated users to create new public market profiles. This includes data validation and insertion into the `markets` table.
+
+**Acceptance Criteria:**
+- [ ] `POST /api/markets` endpoint accepts valid market data.
+- [ ] Market data is stored correctly in the database.
+- [ ] Only authenticated users can create markets.
+- [ ] Appropriate error handling for invalid input or unauthenticated requests.
+
+**Notes:**
+This task is blocked until user login (`TASK-003`) is implemented, as market creation requires authentication.
+
+---
+
+## 7. Upcoming/Planned Tasks
+
+### TASK-005: Implement Market Discovery Search/Filter | Status: not-started | Priority: medium | Dependencies: None | Estimated: 5h | Actual: | Created: 2025-08-15 | Updated: 2025-08-15
+**Assigned Area:** Backend, Frontend
+**Related Files:** [`src/controllers/market.controller.js`](src/controllers/market.controller.js), [`src/services/market.service.js`](src/services/market.service.js), [`src/views/discover.ejs`](src/views/discover.ejs)
+**Tags:** `#search #filter #api #frontend`
+**Description:**
+Enhance the market discovery page with search and filtering capabilities (e.g., by name, address, attributes). This will involve modifying the `getAllMarkets` service and controller, and updating the `discover.ejs` view.
+
+**Acceptance Criteria:**
+- [ ] Users can search markets by name or address.
+- [ ] Users can filter markets by attributes.
+- [ ] Search/filter results are displayed correctly on the discovery page.
+
+### TASK-006: Develop Market Tracking API | Status: not-started | Priority: high | Dependencies: TASK-003, TASK-004 | Estimated: 3.5h | Actual: | Created: 2025-08-15 | Updated: 2025-08-15
+**Assigned Area:** Backend, Database
+**Related Files:** [`src/controllers/trackedMarket.controller.js`](src/controllers/trackedMarket.controller.js), [`src/services/trackedMarket.service.js`](src/services/trackedMarket.service.js), [`src/routes/market.routes.js`](src/routes/market.routes.js), [`src/db/init.sql`](src/db/init.sql)
+**Tags:** `#api #crud #user-specific`
+**Description:**
+Implement the API endpoints for users to "track" and "untrack" markets, creating or deleting entries in the `tracked_markets` table.
+
+**Acceptance Criteria:**
+- [ ] `POST /api/markets/:marketId/track` successfully adds a market to a user's tracked list.
+- [ ] `DELETE /api/markets/:marketId/track` successfully removes a market from a user's tracked list.
+- [ ] Proper handling of duplicate tracking attempts.
+
+---
+
+## 8. Recently Completed Tasks
+
+### TASK-000: Add repomix to .gitignore | Status: completed | Priority: low | Dependencies: None | Estimated: 0.1h | Actual: 0.05h | Created: 2025-08-15 | Updated: 2025-08-15
+**Assigned Area:** DevOps
+**Related Files:** [`gitignore`](.gitignore)
+**Tags:** `#git #configuration`
+**Description:**
+Add `repomix` to the `.gitignore` file to prevent `repomix-output.txt` from being tracked by Git. If `.gitignore` does not exist, create it.
+
+**Acceptance Criteria:**
+- [x] `repomix` entry is present in `.gitignore`.
+- [x] `repomix-output.txt` is ignored by Git.
+
+**Notes:**
+The `.gitignore` file did not exist, so it was created.
+
+**Completion Log:**
+**2025-08-15 15:23:38 UTC** - Status changed to completed
+- **Summary:** Created the `.gitignore` file and added `repomix` to it.
+- **Time spent:** 0.05h
+- **Notes:** Confirmed the file was created successfully.
+- **Impact:** Ensures `repomix-output.txt` is not committed to the repository.
+
+---
+
+## 9. File Structure Documentation
+
+This section provides a living map of the project's organization, detailing the purpose of each major folder and file type. It will be updated immediately when files are added, moved, or deleted.
+
+```
+c:/Users/James/Documents/RUMFOR MARKET/potteryapp/
+├── .env                  # Environment variables for local development (e.g., DB credentials, JWT secret)
+├── .gitignore            # Specifies intentionally untracked files to ignore by Git (e.g., node_modules, repomix-output.txt)
+├── ARCHITECTURE.md       # Detailed document outlining the application's architecture, principles, and data flow.
+├── DEPLOYMENT.md         # Instructions for deploying the application, specifically to Namecheap shared hosting.
+├── jest.config.js        # Configuration file for Jest, the JavaScript testing framework.
+├── package.json          # Project metadata, dependencies, and npm scripts (e.g., start, dev, db:migrate).
+├── README.md             # General project overview and quick start guide.
+├── repomix-output.txt    # (Ignored by Git) A merged representation of the entire codebase generated by Repomix.
+├── public/               # Contains all static assets served directly to the client's browser.
+│   ├── css/              # Stylesheets for the application.
+│   │   └── style.css     # Main CSS file for global styles.
+│   └── js/               # Client-side JavaScript files.
+│       └── main.js       # Main client-side JavaScript for interactive elements.
+├── src/                  # Contains all the application's source code.
+│   ├── controllers/      # Handles incoming HTTP requests, validates input, and calls services.
+│   │   ├── auth.controller.js      # Handles user registration and login requests.
+│   │   ├── event.controller.js     # Handles requests related to tracked market events.
+│   │   ├── market.controller.js    # Handles requests for public market profiles and attributes.
+│   │   ├── message.controller.js   # Handles requests for market message board posts.
+│   │   ├── rating.controller.js    # Handles requests for market attribute voting.
+│   │   └── trackedMarket.controller.js # Handles requests for user-tracked markets.
+│   ├── db/               # Manages database connection and schema.
+│   │   ├── connection.js # Establishes and manages the PostgreSQL database connection.
+│   │   ├── init.sql      # SQL script for initializing the database schema (table creation, initial data).
+│   │   └── migrate.js    # Node.js script to run the database migration (executes init.sql).
+│   ├── middleware/       # Contains Express middleware functions.
+│   │   └── auth.middleware.js # Middleware for authenticating requests using JWT.
+│   ├── routes/           # Defines API endpoints and maps them to controller functions.
+│   │   ├── auth.routes.js    # API routes for authentication (register, login).
+│   │   ├── index.js          # Central API route aggregator.
+│   │   ├── market.routes.js  # API routes for markets, messages, ratings, and tracking.
+│   │   └── view.routes.js    # Routes for server-rendered EJS views (e.g., home, login, dashboard).
+│   ├── services/         # Contains the core business logic and interacts with the database.
+│   │   ├── auth.service.js     # Business logic for user authentication.
+│   │   ├── event.service.js    # Business logic for tracked market events.
+│   │   ├── market.service.js   # Business logic for public market profiles and attributes.
+│   │   ├── message.service.js  # Business logic for market message board posts.
+│   │   ├── rating.service.js   # Business logic for market attribute voting.
+│   │   └── trackedMarket.service.js # Business logic for user-tracked markets.
+│   ├── views/            # EJS template files for server-side rendering.
+│   │   ├── dashboard.ejs     # User's personal dashboard view.
+│   │   ├── discover.ejs      # Public market discovery page.
+│   │   ├── index.ejs         # Home page.
+│   │   ├── login.ejs         # User login page.
+│   │   ├── manage-market.ejs # Page for managing a specific tracked market.
+│   │   ├── market.ejs        # Detailed public market profile page.
+│   │   ├── register.ejs      # User registration page.
+│   │   └── layouts/          # EJS layout templates.
+│   │       └── main.ejs      # Main layout template for all pages.
+│   └── server.js         # Main entry point for the application; initializes Express server.
+└── tests/                # Contains all test files for the application.
+    ├── auth.controller.test.js     # Tests for authentication controller.
+    ├── auth.service.test.js        # Tests for authentication service.
+    ├── market.service.test.js      # Tests for market service.
+    ├── setup.js                    # Jest setup file for global mocks (e.g., DB connection).
+    └── trackedMarket.service.test.js # Tests for tracked market service.
+```
+
+---
+
+## 10. Progress Metrics
+
+**Task Completion Statistics:**
+- Completed: 2
+- In Progress: 0
+- Not Started: 3
+- Blocked: 1
+- On Hold: 0
+- Total Tasks: 6
+
+**Time Tracking (Estimated vs Actual):**
+- Total Estimated Time: 10.6h
+- Total Actual Time: 0.55h (for completed tasks)
+
+**Velocity Measurements:**
+- Tasks completed today: 2
+- Average time per completed task: 0.275h
+
+**Bottleneck Identification:**
+- `TASK-003` (User Login) is a critical dependency for several upcoming features.
+- `TASK-004` (Market Creation API) is currently blocked by `TASK-003`.
+
+**Recent Milestone Achievements:**
+- Established the project's planning and tracking system.
+- Initial `.gitignore` configuration.
+
+**Upcoming Deadlines and Critical Path Analysis:**
+- Focus on `TASK-002` and `TASK-003` to unblock core API development.
+
+---
+
+## 11. Cross-Reference Index
+
+This section tracks relationships and dependencies between tasks that might affect each other, beyond direct blocking dependencies.
+
+- `TASK-002` (Implement User Registration) and `TASK-003` (Implement User Login) are foundational for all authenticated features.
+- `TASK-004` (Develop Market Creation API) depends on `TASK-003` for user authentication.
+- `TASK-006` (Develop Market Tracking API) depends on both `TASK-003` (authentication) and `TASK-004` (existence of markets to track).
+- Any changes to `src/db/init.sql` (e.g., schema modifications) will require a `db:migrate` run and potentially impact all services interacting with the database.
+
+---
+
+## 12. Archived Completed Tasks
+
+This section holds tasks that have been completed and are no longer actively relevant to the current development cycle, but are kept for historical reference.
+
+*(No tasks archived yet)*
+
+================
+File: public/css/style.css
+================
+/* General Body & Typography */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+}
+
+h1, h2, h3 {
+    color: #2c3e50;
+}
+
+a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Header & Navigation */
+header {
+    background-color: #fff;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+nav a {
+    color: #2c3e50;
+}
+
+nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+
+/* Main Content */
+main {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    background-color: #fff;
+    border-top: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+/* Buttons */
+.btn-primary, .btn-secondary {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: #fff;
+    border: 1px solid #3498db;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background-color: #ecf0f1;
+    color: #34495e;
+    border: 1px solid #bdc3c7;
+}
+
+.btn-secondary:hover {
+    background-color: #dadedf;
+    text-decoration: none;
+}
+
+.cta-buttons {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+/* Forms */
+.form-stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 400px;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+.form-group input {
+    padding: 0.75rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* Discover Page */
+.search-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.search-bar input {
+    flex-grow: 1;
+    padding: 0.75rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+.market-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+.market-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+}
+.market-card h3 {
+    margin-top: 0;
+}
+
+/* Dashboard Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2rem;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    overflow: hidden;
+}
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+th {
+    background-color: #f4f7f6;
+}
+.status-badge {
+    background-color: #3498db;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+================
+File: public/js/main.js
+================
+// Client-side JavaScript will go here.
+console.log('Rumfor Market Tracker script loaded.');
+
+document.addEventListener('DOMContentLoaded', () => {
+    const messageForm = document.querySelector('.message-board form');
+
+    if (messageForm) {
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const contentTextarea = messageForm.querySelector('textarea[name="content"]');
+            const content = contentTextarea.value.trim();
+            const marketId = messageForm.action.match(/markets\/(\d+)/)[1];
+
+            if (!content) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/markets/${marketId}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // In a real app, a bearer token would be included
+                        // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ content })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to post message');
+                }
+
+                const newMessage = await response.json();
+
+                // Dynamically add the new message to the UI
+                const messageBoard = document.querySelector('.message-board');
+                const newMessageDiv = document.createElement('div');
+                newMessageDiv.classList.add('message');
+                newMessageDiv.innerHTML = `
+                    <p><strong>You:</strong> ${content}</p>
+                    <small>${new Date().toLocaleDateString()}</small>
+                `;
+                messageBoard.insertBefore(newMessageDiv, messageForm);
+
+                // Clear the textarea
+                contentTextarea.value = '';
+
+            } catch (error) {
+                console.error('Error posting message:', error);
+                alert('Could not post your message. Please try again.');
+            }
+        });
+    }
+
+    document.querySelectorAll('.vote-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const marketId = e.target.dataset.marketId;
+            const attributeId = e.target.dataset.attributeId;
+
+            try {
+                const response = await fetch(`/api/markets/${marketId}/attributes/${attributeId}/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to cast vote');
+                }
+
+                // Increment the vote count in the UI
+                const tagSpan = e.target.parentElement;
+                const currentText = tagSpan.innerText;
+                const match = currentText.match(/\((\d+)\)/);
+                if (match) {
+                    const currentCount = parseInt(match[1], 10);
+                    tagSpan.innerHTML = tagSpan.innerHTML.replace(`(${currentCount})`, `(${currentCount + 1})`);
+                }
+                e.target.disabled = true; // Prevent multiple votes
+                e.target.innerText = '✓';
+
+            } catch (error) {
+                console.error('Error casting vote:', error);
+            }
+        });
+    });
+
+    const voteButtons = document.querySelectorAll('.attribute-tags .tag button');
+    voteButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const tag = e.target.closest('.tag');
+            const marketId = window.location.pathname.split('/').pop(); // Simple way to get ID from URL
+            const attributeId = tag.dataset.attributeId; // Assumes we add data-attribute-id to the tag
+
+            e.target.disabled = true;
+            e.target.textContent = 'Voted!';
+
+            try {
+                const response = await fetch(`/api/markets/${marketId}/attributes/${attributeId}/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    // Re-enable button if vote failed
+                    e.target.disabled = false;
+                    e.target.textContent = '+1';
+                    throw new Error('Failed to vote');
+                }
+
+                console.log('Vote successful');
+
+            } catch (error) {
+                console.error('Error voting:', error);
+                alert('Your vote could not be recorded.');
+            }
+        });
+    });
+});
+
+================
+File: README.md
+================
+# potteryapp
+
+================
+File: src/controllers/auth.controller.js
+================
+const authService = require('../services/auth.service');
+
+const register = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required.' });
+    }
+    const user = await authService.register(email, password);
+    res.status(201).json({ message: 'User registered successfully.', userId: user.id });
+  } catch (error) {
+    // Since the DB isn't connected, we expect errors. For now, return success.
+    if (error.code === 'ECONNREFUSED') {
+      return res.status(201).json({ message: 'User registration simulated successfully.' });
+    }
+    res.status(500).json({ message: 'Error registering user.', error: error.message });
+  }
+};
+
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required.' });
+    }
+    const { token } = await authService.login(email, password);
+    res.json({ message: 'Login successful.', token });
+  } catch (error) {
+    // Since the DB isn't connected, we expect errors. For now, return success.
+     if (error.code === 'ECONNREFUSED') {
+      return res.json({ message: 'Login simulated successfully.', token: 'fake-jwt-for-dev' });
+    }
+    res.status(401).json({ message: 'Invalid credentials.', error: error.message });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+};
+
+================
+File: src/controllers/event.controller.js
+================
+// const eventService = require('../services/event.service');
+
+const addEvent = async (req, res) => {
+  res.status(201).json({ message: `Event added to tracked market ${req.params.trackedMarketId}` });
+};
+
+const getEventsForTrackedMarket = async (req, res) => {
+  res.json({ message: `Getting events for tracked market ${req.params.trackedMarketId}` });
+};
+
+const updateEvent = async (req, res) => {
+  res.json({ message: `Updating event ${req.params.eventId}` });
+};
+
+const deleteEvent = async (req, res) => {
+  res.json({ message: `Deleting event ${req.params.eventId}` });
+};
+
+module.exports = {
+  addEvent,
+  getEventsForTrackedMarket,
+  updateEvent,
+  deleteEvent,
+};
+
+================
+File: src/controllers/market.controller.js
+================
+const marketService = require('../services/market.service');
+
+const getAllMarkets = async (req, res) => {
+  try {
+    const markets = await marketService.getAll(req.query);
+    res.json(markets);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching markets', error: error.message });
+  }
+};
+
+const getMarketById = async (req, res) => {
+  try {
+    const market = await marketService.getById(req.params.id);
+    if (!market) {
+      return res.status(404).json({ message: 'Market not found' });
+    }
+    res.json(market);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching market', error: error.message });
+  }
+};
+
+const createMarket = async (req, res) => {
+  try {
+    const market = await marketService.create(req.body, req.user.id);
+    res.status(201).json(market);
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating market', error: error.message });
+  }
+};
+
+const updateMarket = async (req, res) => {
+  try {
+    const market = await marketService.update(req.params.id, req.body);
+    res.json(market);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating market', error: error.message });
+  }
+};
+
+const deleteMarket = async (req, res) => {
+  try {
+    await marketService.remove(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting market', error: error.message });
+  }
+};
+
+const addVote = async (req, res) => {
+  try {
+    const { marketId, attributeId } = req.params;
+    const userId = req.user.id;
+    await marketService.addVoteForAttribute(userId, marketId, attributeId);
+    res.status(201).json({ message: 'Vote cast successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error casting vote', error: error.message });
+  }
+};
+
+module.exports = {
+  getAllMarkets,
+  getMarketById,
+  createMarket,
+  updateMarket,
+  deleteMarket,
+  addVote,
+};
+
+================
+File: src/controllers/message.controller.js
+================
+const messageService = require('../services/message.service');
+
+const getMessagesForMarket = async (req, res) => {
+    try {
+        const { marketId } = req.params;
+        const messages = await messageService.getForMarket(marketId);
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching messages', error: error.message });
+    }
+};
+
+const postMessage = async (req, res) => {
+    try {
+        const { marketId } = req.params;
+        const { content, parentPostId } = req.body;
+        const userId = req.user.id;
+        const message = await messageService.create(marketId, userId, content, parentPostId);
+        res.status(201).json(message);
+    } catch (error) {
+        res.status(500).json({ message: 'Error posting message', error: error.message });
+    }
+};
+
+module.exports = {
+    getMessagesForMarket,
+    postMessage,
+};
+
+================
+File: src/controllers/rating.controller.js
+================
+const ratingService = require('../services/rating.service');
+
+const voteOnAttribute = async (req, res) => {
+  try {
+    const { marketId, attributeId } = req.params;
+    const userId = req.user.id;
+    await ratingService.addVote(userId, marketId, attributeId);
+    res.status(201).json({ message: 'Vote recorded successfully.' });
+  } catch (error) {
+    if (error.code === '23505') { // Unique violation
+        return res.status(409).json({ message: 'You have already voted for this attribute on this market.' });
+    }
+    res.status(500).json({ message: 'Error recording vote.', error: error.message });
+  }
+};
+
+module.exports = {
+  voteOnAttribute,
+};
+
+================
+File: src/controllers/trackedMarket.controller.js
+================
+const trackedMarketService = require('../services/trackedMarket.service');
+
+const trackMarket = async (req, res) => {
+    try {
+        const { marketId } = req.params;
+        const userId = req.user.id;
+        const trackedMarket = await trackedMarketService.add(userId, marketId);
+        res.status(201).json(trackedMarket);
+    } catch (error) {
+        res.status(500).json({ message: 'Error tracking market', error: error.message });
+    }
+};
+
+const untrackMarket = async (req, res) => {
+    try {
+        const { marketId } = req.params;
+        const userId = req.user.id;
+        await trackedMarketService.remove(userId, marketId);
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({ message: 'Error untracking market', error: error.message });
+    }
+};
+
+const getUserTrackedMarkets = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const markets = await trackedMarketService.getAllForUser(userId);
+        res.json(markets);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching tracked markets', error: error.message });
+    }
+};
+
+const updateTrackedMarketStatus = async (req, res) => {
+    try {
+        const { trackedMarketId } = req.params;
+        const { status } = req.body;
+        const userId = req.user.id;
+        const updatedMarket = await trackedMarketService.updateStatus(userId, trackedMarketId, status);
+        res.json(updatedMarket);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating status', error: error.message });
+    }
+};
+
+module.exports = {
+  trackMarket,
+  untrackMarket,
+  getUserTrackedMarkets,
+  updateTrackedMarketStatus,
+};
+
+================
+File: src/db/connection.js
+================
+const { Pool } = require('pg');
+require('dotenv').config();
+
+let pool;
+let mockQuery = () => Promise.resolve({ rows: [] });
+
+// In a test or dev environment without a DB, use a mock pool
+if (process.env.NODE_ENV === 'test' || !process.env.DB_DATABASE) {
+    pool = {
+        query: mockQuery,
+        connect: () => ({ release: () => {} }),
+        end: () => {}
+    };
+    console.log("Using mock database pool.");
+} else {
+    pool = new Pool({
+        user: process.env.DB_USER,
+        host: process.env.DB_HOST,
+        database: process.env.DB_DATABASE,
+        password: process.env.DB_PASSWORD,
+        port: process.env.DB_PORT,
+    });
+}
+
+
+const testDbConnection = async () => {
+  try {
+    await pool.query('SELECT NOW()');
+    console.log('Database connection successful.');
+  } catch (err) {
+    console.error('Database connection failed.', err.stack);
+  }
+};
+
+module.exports = {
+  query: (text, params) => pool.query(text, params),
+  testDbConnection,
+  pool, // Export pool for more complex transactions if needed
+};
+
+================
+File: src/db/init.sql
+================
+-- Rumfor Market Tracker - Database Initialization Script
+
+-- Drop tables in reverse order of creation to handle dependencies
+DROP TABLE IF EXISTS message_board_posts;
+DROP TABLE IF EXISTS tracked_market_events;
+DROP TABLE IF EXISTS custom_statuses;
+DROP TABLE IF EXISTS tracked_markets;
+DROP TABLE IF EXISTS market_attribute_votes;
+DROP TABLE IF EXISTS market_attributes;
+DROP TABLE IF EXISTS market_dates;
+DROP TABLE IF EXISTS markets;
+DROP TABLE IF EXISTS users;
+
+-- Create users table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create markets table
+CREATE TABLE markets (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    address VARCHAR(255),
+    latitude DECIMAL(9, 6),
+    longitude DECIMAL(9, 6),
+    contact_email VARCHAR(255),
+    website VARCHAR(255),
+    created_by_user_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create market_dates table
+CREATE TABLE market_dates (
+    id SERIAL PRIMARY KEY,
+    market_id INTEGER REFERENCES markets(id) ON DELETE CASCADE,
+    day_of_week VARCHAR(20),
+    start_time TIME,
+    end_time TIME,
+    season_start DATE,
+    season_end DATE
+);
+
+-- Create market_attributes table
+CREATE TABLE market_attributes (
+    id SERIAL PRIMARY KEY,
+    attribute_name VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- Create market_attribute_votes table
+CREATE TABLE market_attribute_votes (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    market_id INTEGER REFERENCES markets(id) ON DELETE CASCADE,
+    attribute_id INTEGER REFERENCES market_attributes(id) ON DELETE CASCADE,
+    UNIQUE (user_id, market_id, attribute_id)
+);
+
+-- Create tracked_markets table
+CREATE TABLE tracked_markets (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    market_id INTEGER REFERENCES markets(id) ON DELETE CASCADE,
+    status VARCHAR(50) NOT NULL DEFAULT 'Interested',
+    UNIQUE (user_id, market_id)
+);
+
+-- Create custom_statuses table
+CREATE TABLE custom_statuses (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    status_name VARCHAR(50) NOT NULL,
+    UNIQUE (user_id, status_name)
+);
+
+-- Create tracked_market_events table
+CREATE TABLE tracked_market_events (
+    id SERIAL PRIMARY KEY,
+    tracked_market_id INTEGER REFERENCES tracked_markets(id) ON DELETE CASCADE,
+    event_date DATE NOT NULL,
+    sales_total DECIMAL(10, 2),
+    costs_total DECIMAL(10, 2),
+    private_notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create message_board_posts table
+CREATE TABLE message_board_posts (
+    id SERIAL PRIMARY KEY,
+    market_id INTEGER REFERENCES markets(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    parent_post_id INTEGER REFERENCES message_board_posts(id) ON DELETE CASCADE, -- For threaded replies
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insert some initial data for market attributes
+INSERT INTO market_attributes (attribute_name) VALUES
+('Good for Crafts'),
+('High Foot Traffic'),
+('Family Friendly'),
+('Good for Produce'),
+('Live Music'),
+('Easy Parking');
+
+-- Informative message
+-- The script will now end. The success message is handled by the migrate.js script.
+
+================
+File: src/db/migrate.js
+================
+const fs = require('fs');
+const path = require('path');
+const { pool } = require('./connection'); // We use the pool to run the query
+
+const runMigration = async () => {
+  console.log('Starting database migration...');
+  const client = await pool.connect();
+  try {
+    const sql = fs.readFileSync(path.join(__dirname, 'init.sql'), 'utf8');
+    await client.query(sql);
+    console.log('Database migration completed successfully.');
+  } catch (err) {
+    console.error('Error during database migration:', err);
+  } finally {
+    client.release();
+    pool.end(); // End the pool so the script exits
+  }
+};
+
+runMigration();
+
+================
+File: src/middleware/auth.middleware.js
+================
+const jwt = require('jsonwebtoken');
+
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // For now, let's inject a fake user for development without a real token
+    // In production, this would be an error.
+    console.log('Auth middleware: No token, faking user for dev.');
+    req.user = { id: 1, email: 'test@example.com' };
+    return next();
+    // return res.status(401).json({ message: 'Authentication token required.' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // Adds user payload to the request
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid or expired token.' });
+  }
+};
+
+module.exports = authMiddleware;
+
+================
+File: src/routes/auth.routes.js
+================
+const express = require('express');
+const router = express.Router();
+const authController = require('../controllers/auth.controller');
+
+// POST /api/auth/register - User registration
+router.post('/register', authController.register);
+
+// POST /api/auth/login - User login
+router.post('/login', authController.login);
+
+// Example route to test
+router.get('/test', (req, res) => {
+    res.json({ message: 'Auth route test successful!' });
+});
+
+
+module.exports = router;
+
+================
+File: src/routes/index.js
+================
+const express = require('express');
+const router = express.Router();
+
+const authRoutes = require('./auth.routes');
+
+// All authentication routes will be prefixed with /auth
+router.use('/auth', authRoutes);
+
+const marketRoutes = require('./market.routes');
+
+// Other route modules can be added here in the future
+router.use('/markets', marketRoutes);
+
+module.exports = router;
+
+================
+File: src/routes/market.routes.js
+================
+const express = require('express');
+const router = express.Router();
+const marketController = require('../controllers/market.controller');
+const authMiddleware = require('../middleware/auth.middleware'); // To protect routes
+
+// GET /api/markets - Get all public markets (with search/filter)
+router.get('/', marketController.getAllMarkets);
+
+// GET /api/markets/:id - Get a single market by ID
+router.get('/:id', marketController.getMarketById);
+
+// POST /api/markets - Create a new public market
+router.post('/', authMiddleware, marketController.createMarket);
+
+// PUT /api/markets/:id - Update an existing market
+router.put('/:id', authMiddleware, marketController.updateMarket);
+
+// DELETE /api/markets/:id - Delete a market
+router.delete('/:id', authMiddleware, marketController.deleteMarket);
+
+
+// --- Message Board Routes ---
+const messageController = require('../controllers/message.controller');
+
+// GET /api/markets/:marketId/messages - Get all messages for a market
+router.get('/:marketId/messages', messageController.getMessagesForMarket);
+
+// POST /api/markets/:marketId/messages - Post a new message
+router.post('/:marketId/messages', authMiddleware, messageController.postMessage);
+
+// POST /api/markets/:marketId/attributes/:attributeId/vote - Cast a vote for an attribute
+router.post('/:marketId/attributes/:attributeId/vote', authMiddleware, marketController.addVote);
+
+
+// --- Tracked Market Routes ---
+const trackedMarketController = require('../controllers/trackedMarket.controller');
+
+// POST /api/markets/:marketId/track - Start tracking a market
+router.post('/:marketId/track', authMiddleware, trackedMarketController.trackMarket);
+
+// DELETE /api/markets/:marketId/track - Stop tracking a market
+router.delete('/:marketId/track', authMiddleware, trackedMarketController.untrackMarket);
+
+// GET /api/markets/tracked - Get all markets tracked by the current user
+router.get('/tracked/all', authMiddleware, trackedMarketController.getUserTrackedMarkets);
+
+// PUT /api/markets/tracked/:trackedMarketId - Update the status of a tracked market
+router.put('/tracked/:trackedMarketId', authMiddleware, trackedMarketController.updateTrackedMarketStatus);
+
+
+// --- Rating Routes ---
+const ratingController = require('../controllers/rating.controller');
+
+// POST /api/markets/:marketId/attributes/:attributeId/vote - Vote for an attribute
+router.post('/:marketId/attributes/:attributeId/vote', authMiddleware, ratingController.voteOnAttribute);
+
+
+router.get('/test', (req, res) => {
+    res.json({ message: 'Market route test successful!' });
+});
+
+module.exports = router;
+
+================
+File: src/routes/view.routes.js
+================
+const express = require('express');
+const router = express.Router();
+
+// Home page
+router.get('/', (req, res) => {
+  res.render('index', { title: 'Home' });
+});
+
+// Login page
+router.get('/login', (req, res) => {
+  res.render('login', { title: 'Login' });
+});
+
+// Register page
+router.get('/register', (req, res) => {
+  res.render('register', { title: 'Register' });
+});
+
+const authMiddleware = require('../middleware/auth.middleware');
+const marketController = require('../controllers/market.controller');
+
+// Dashboard page (Protected)
+router.get('/dashboard', authMiddleware, async (req, res) => {
+  try {
+    const trackedMarketService = require('../services/trackedMarket.service');
+    const markets = await trackedMarketService.getAllForUser(req.user.id);
+    res.render('dashboard', { title: 'My Dashboard', markets });
+  } catch (error) {
+    res.status(500).send('Error fetching dashboard data');
+  }
+});
+
+// Discover markets page
+router.get('/discover', async (req, res) => {
+  try {
+    // We'll call the controller method which in turn calls the service
+    // For simplicity in rendering, we can also call the service directly here
+    // But let's stick to the controller pattern. We need to mock the req/res for the controller.
+    // A simpler way for server-side rendering is to call the service directly. Let's do that.
+    const marketService = require('../services/market.service');
+    const markets = await marketService.getAll();
+    res.render('discover', { title: 'Discover Markets', markets: markets });
+  } catch (error) {
+    res.status(500).send('Error fetching markets');
+  }
+});
+
+// Single market page
+router.get('/dashboard/market/:trackedMarketId', authMiddleware, async (req, res) => {
+  try {
+    const { trackedMarketId } = req.params;
+    const userId = req.user.id;
+    const trackedMarketService = require('../services/trackedMarket.service');
+    const market = await trackedMarketService.getTrackedMarketById(userId, trackedMarketId);
+    if (!market) {
+      return res.status(404).send('Tracked market not found or you do not have permission to view it.');
+    }
+    res.render('manage-market', { title: `Manage ${market.name}`, market });
+  } catch (error) {
+    res.status(500).send('Error fetching tracked market details');
+  }
+});
+
+router.get('/market/:id', async (req, res) => {
+  try {
+    const marketService = require('../services/market.service');
+    const market = await marketService.getById(req.params.id);
+    if (!market) {
+      return res.status(404).send('Market not found');
+    }
+    res.render('market', { title: market.name, market });
+  } catch (error) {
+    res.status(500).send('Error fetching market');
+  }
+});
+
+module.exports = router;
+
+================
+File: src/server.js
+================
+// Load environment variables from .env file
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+// Import database connection test
+const { testDbConnection } = require('./db/connection');
+
+const app = express();
+
+// --- Middleware ---
+// Enable CORS for all routes
+app.use(cors());
+// Parse JSON bodies
+app.use(express.json());
+// Parse URL-encoded bodies
+app.use(express.urlencoded({ extended: true }));
+
+const expressLayouts = require('express-ejs-layouts');
+
+// --- View Engine Setup ---
+app.use(expressLayouts);
+app.set('layout', './layouts/main'); // default layout
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+// --- Static Files ---
+app.use(express.static(path.join(__dirname, '../public')));
+
+// --- Routes ---
+const apiRoutes = require('./routes/index');
+app.use('/api', apiRoutes);
+
+const viewRoutes = require('./routes/view.routes');
+app.use('/', viewRoutes);
+
+// --- Server Initialization ---
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  // Test the database connection on startup - DISABLED until deployment
+  // testDbConnection();
+});
+
+module.exports = app;
+
+================
+File: src/services/auth.service.js
+================
+const db = require('../db/connection');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const register = async (email, password) => {
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const result = await db.query(
+    'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email',
+    [email, hashedPassword]
+  );
+  return result.rows[0];
+};
+
+const login = async (email, password) => {
+  const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+  if (result.rows.length === 0) {
+    throw new Error('User not found');
+  }
+  const user = result.rows[0];
+
+  const isMatch = await bcrypt.compare(password, user.password_hash);
+  if (!isMatch) {
+    throw new Error('Invalid credentials');
+  }
+
+  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  return { token };
+};
+
+module.exports = {
+  register,
+  login,
+};
+
+================
+File: src/services/event.service.js
+================
+// const db = require('../db/connection');
+
+const add = async (trackedMarketId, eventData) => {
+  console.log(`Adding event to tracked market ${trackedMarketId}:`, eventData);
+  return { id: 1, tracked_market_id: trackedMarketId, ...eventData };
+};
+
+const getAllForTrackedMarket = async (trackedMarketId) => {
+  console.log(`Getting all events for tracked market ${trackedMarketId}`);
+  return [{ id: 1, tracked_market_id: trackedMarketId, sales_total: 100 }];
+};
+
+const update = async (eventId, eventData) => {
+  console.log(`Updating event ${eventId} with:`, eventData);
+  return { id: eventId, ...eventData };
+};
+
+const remove = async (eventId) => {
+  console.log(`Deleting event with ID: ${eventId}`);
+  return { message: 'Event deleted successfully' };
+};
+
+module.exports = {
+  add,
+  getAllForTrackedMarket,
+  update,
+  remove,
+};
+
+================
+File: src/services/market.service.js
+================
+const db = require('../db/connection');
+
+const getAll = async (queryParams) => {
+  // Basic query, can be expanded with search/filter later
+  const result = await db.query('SELECT * FROM markets ORDER BY created_at DESC');
+  return result.rows;
+};
+
+const getById = async (id) => {
+  const marketResult = await db.query('SELECT * FROM markets WHERE id = $1', [id]);
+  if (!marketResult.rows.length) {
+    return undefined;
+  }
+  const market = marketResult.rows[0];
+
+  const attributesResult = await db.query(
+    `SELECT
+       att.id,
+       att.attribute_name,
+       COUNT(vote.id) AS vote_count
+     FROM market_attributes att
+     LEFT JOIN market_attribute_votes vote ON att.id = vote.attribute_id AND vote.market_id = $1
+     GROUP BY att.id
+     ORDER BY vote_count DESC`,
+    [id]
+  );
+
+  market.attributes = attributesResult.rows;
+  return market;
+};
+
+const create = async (marketData, userId) => {
+  const { name, description, address, latitude, longitude, contact_email, website } = marketData;
+  const result = await db.query(
+    `INSERT INTO markets (name, description, address, latitude, longitude, contact_email, website, created_by_user_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING *`,
+    [name, description, address, latitude, longitude, contact_email, website, userId]
+  );
+  return result.rows[0];
+};
+
+const update = async (id, marketData) => {
+  const { name, description, address, latitude, longitude, contact_email, website } = marketData;
+  const result = await db.query(
+    `UPDATE markets
+     SET name = $1, description = $2, address = $3, latitude = $4, longitude = $5, contact_email = $6, website = $7
+     WHERE id = $8
+     RETURNING *`,
+    [name, description, address, latitude, longitude, contact_email, website, id]
+  );
+  return result.rows[0];
+};
+
+const remove = async (id) => {
+  await db.query('DELETE FROM markets WHERE id = $1', [id]);
+  return { message: 'Market deleted successfully' };
+};
+
+const addVoteForAttribute = async (userId, marketId, attributeId) => {
+  // Use INSERT ... ON CONFLICT DO NOTHING to prevent duplicate votes
+  const result = await db.query(
+    `INSERT INTO market_attribute_votes (user_id, market_id, attribute_id)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, market_id, attribute_id) DO NOTHING
+     RETURNING *`,
+    [userId, marketId, attributeId]
+  );
+  return result.rows[0];
+};
+
+module.exports = {
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+  addVoteForAttribute,
+};
+
+================
+File: src/services/message.service.js
+================
+// const db = require('../db/connection');
+
+const getForMarket = async (marketId) => {
+    console.log(`Getting messages for market ${marketId}`);
+    return [
+        { id: 1, user_id: 1, content: 'Does anyone know the booth fee?', created_at: new Date().toISOString() },
+        { id: 2, user_id: 2, content: 'I believe it is $50.', parent_post_id: 1, created_at: new Date().toISOString() },
+    ];
+};
+
+const create = async (marketId, userId, content, parentPostId = null) => {
+    console.log(`User ${userId} posting to market ${marketId}: "${content}"`);
+    return { id: 3, market_id: marketId, user_id: userId, content, parent_post_id: parentPostId };
+};
+
+module.exports = {
+    getForMarket,
+    create,
+};
+
+================
+File: src/services/rating.service.js
+================
+const db = require('../db/connection');
+
+const addVote = async (userId, marketId, attributeId) => {
+  const result = await db.query(
+    'INSERT INTO market_attribute_votes (user_id, market_id, attribute_id) VALUES ($1, $2, $3) RETURNING id',
+    [userId, marketId, attributeId]
+  );
+  return result.rows[0];
+};
+
+module.exports = {
+  addVote,
+};
+
+================
+File: src/services/trackedMarket.service.js
+================
+const db = require('../db/connection');
+
+const add = async (userId, marketId) => {
+  const result = await db.query(
+    'INSERT INTO tracked_markets (user_id, market_id) VALUES ($1, $2) RETURNING *',
+    [userId, marketId]
+  );
+  return result.rows[0];
+};
+
+const remove = async (userId, marketId) => {
+  await db.query('DELETE FROM tracked_markets WHERE user_id = $1 AND market_id = $2', [userId, marketId]);
+  return { message: 'Market untracked' };
+};
+
+const getAllForUser = async (userId) => {
+  const result = await db.query(
+    `SELECT
+       tm.id AS tracked_market_id,
+       tm.status,
+       m.id AS market_id,
+       m.name,
+       m.address
+     FROM tracked_markets tm
+     JOIN markets m ON tm.market_id = m.id
+     WHERE tm.user_id = $1`,
+    [userId]
+  );
+  return result.rows;
+};
+
+const updateStatus = async (userId, trackedMarketId, status) => {
+  const result = await db.query(
+    'UPDATE tracked_markets SET status = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
+    [status, trackedMarketId, userId]
+  );
+  return result.rows[0];
+};
+
+const getTrackedMarketById = async (userId, trackedMarketId) => {
+  const result = await db.query(
+    `SELECT
+       tm.id AS tracked_market_id,
+       tm.status,
+       m.*
+     FROM tracked_markets tm
+     JOIN markets m ON tm.market_id = m.id
+     WHERE tm.id = $1 AND tm.user_id = $2`,
+    [trackedMarketId, userId]
+  );
+  return result.rows[0];
+}
+
+module.exports = {
+  add,
+  remove,
+  getAllForUser,
+  updateStatus,
+  getTrackedMarketById,
+};
+
+================
+File: src/views/dashboard.ejs
+================
+<h2>My Tracked Markets</h2>
+
+<div class="tracked-markets-container">
+    <% if (markets && markets.length) { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Market Name</th>
+                    <th>Address</th>
+                    <th>My Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% markets.forEach(market => { %>
+                    <tr>
+                        <td><%= market.name %></td>
+                        <td><%= market.address %></td>
+                        <td><span class="status-badge"><%= market.status %></span></td>
+                        <td>
+                            <a href="/dashboard/market/<%= market.tracked_market_id %>" class="btn-secondary btn-sm">Manage</a>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p>You are not tracking any markets yet. <a href="/discover">Discover some markets</a> to get started!</p>
+    <% } %>
+</div>
+
+================
+File: src/views/discover.ejs
+================
+<h2>Discover Markets</h2>
+<div class="search-bar">
+    <input type="search" placeholder="Search by name, city, or zip code...">
+    <button class="btn-primary">Search</button>
+</div>
+
+<div class="market-list">
+    <% if (markets && markets.length) { %>
+        <% markets.forEach(market => { %>
+            <div class="market-card">
+                <h3><%= market.name %></h3>
+                <p><%= market.address || 'No address provided' %></p>
+                <a href="/market/<%= market.id %>" class="btn-secondary">View Details</a>
+            </div>
+        <% }) %>
+    <% } else { %>
+        <p>No markets found. Why not be the first to <a href="/markets/new">add one</a>?</p>
+    <% } %>
+</div>
+
+================
+File: src/views/index.ejs
+================
+<h2>Welcome to the Market Tracker</h2>
+<p>Your all-in-one solution for managing your market vendor business.</p>
+<div class="cta-buttons">
+    <a href="/discover" class="btn-primary">Find Markets</a>
+    <a href="/register" class="btn-secondary">Get Started</a>
+</div>
+<p>This app is a progressive web app that feels native on mobile devices while remaining accessible on desktop for detailed analysis and reporting.</p>
+<p>The main goal is tracking markets - and making a database or markets when where, details. so other users can find those markets - people should be able to add private markets - but adding a market should be public by default and check against existing markets to prevent duplicates.</p>
+<p>Users will be adding a market so they can track their things - they have an option to keep it private - theyre personal details - or things they need to track should always be private - but the market details can be public - so that other users can use that market template - the market template should include details about the market - like email, size. esimated turnout, vendor thumbs up or thumbs down if they like it so the markets can be ranked.</p>
+<h3>Dashboard</h3>
+<p>Today's Markets: Prominent display of current day's markets and key metrics</p>
+<p>Quick Actions: One-tap access to most common tasks</p>
+<p>Alert System: Low stock warnings, upcoming market reminders, payment due dates</p>
+<p>Weather Integration: Weather forecast for market days</p>
+<h3>Market Management</h3>
+<p>Market Profiles: Create detailed profiles for each market (location, fees, hours, special requirements, customer demographics)</p>
+<p>Market Calendar: Visual calendar showing upcoming markets, deadlines, and preparation schedules</p>
+<p>Market Performance History: Track long-term trends and seasonal patterns for each market</p>
+<h3>Sales & Transaction Tracking</h3>
+<p>Quick Sale Entry: Large, thumb-friendly buttons for fast sales logging during busy periods</p>
+<p>Payment Method Tracking: Cash, card, digital payment tracking</p>
+<p>Customer Information: Optional customer details for repeat business and marketing</p>
+<p>Receipt Generation: Digital receipts via email/SMS</p>
+<h3>Financial Management</h3>
+<p>Expense Tracking: Market fees, travel costs, materials, permits</p>
+<p>Revenue Analysis: Sales by market, product, time period</p>
+<p>Profit Calculations: Real profit after all expenses, not just gross sales</p>
+<p>Tax Preparation: Categorized expense and income reports</p>
+<h3>Analytics & Insights</h3>
+<p>Market Performance Comparison: Which markets are most profitable</p>
+<p>Product Performance: Best and worst-selling items by market</p>
+<p>Seasonal Trends: Identify patterns in sales and customer behavior</p>
+<p>ROI Analysis: Time and money invested vs. returns for each market</p>
+<h3>Technical Requirements</h3>
+<p>Mobile-First Design Principles</p>
+<p>Touch-Optimized: Large tap targets, swipe gestures, thumb-friendly navigation</p>
+<p>Offline Capability: Core functions work without internet connection</p>
+<p>Fast Loading: Minimal initial load time, progressive loading of features</p>
+<p>Battery Conscious: Efficient use of device resources</p>
+<h3>User Experience Priorities</h3>
+<p>Speed: Critical actions (logging sales, checking stock) should take <3 seconds</p>
+<p>Simplicity: Reduce cognitive load during busy market operations</p>
+<p>Error Prevention: Validate inputs and provide clear error messages</p>
+<p>Accessibility: High contrast options, large text, voice input capabilities</p>
+<h3>Data Architecture</h3>
+<p>Offline-First: Local data storage with cloud sync when available</p>
+<p>Multi-Device Sync: Access data from phone, tablet, or computer</p>
+<p>Data Export: CSV, PDF reports for accounting and analysis</p>
+<p>Backup & Recovery: Automatic backups with easy restore options</p>
+<h3>Specific UI/UX Considerations</h3>
+<p>Dashboard Design</p>
+<p>Today's Markets: Prominent display of current day's markets and key metrics</p>
+<p>Quick Actions: One-tap access to most common tasks</p>
+<p>Alert System: Low stock warnings, upcoming market reminders, payment due dates</p>
+<p>Weather Integration: Weather forecast for market days</p>
+<h3>Navigation Structure</h3>
+<p>Bottom Tab Navigation: Markets, Sales, Inventory, Analytics, Settings</p>
+<p>Contextual Actions: Floating action buttons for primary tasks in each section</p>
+<p>Search & Filter: Quick access to specific products, markets, or time periods</p>
+<h3>Input Methods</h3>
+<p>Voice Input: For hands-free operation during busy periods</p>
+<p>Barcode Scanning: For products with UPC codes</p>
+<p>Photo Capture: Document receipts, product photos, market setups</p>
+<p>Quick Templates: Pre-filled forms for common transactions</p>
+<h3>Advanced Features to Consider</h3>
+<p>Market Intelligence</p>
+<p>Weather Correlation: Analyze how weather affects sales at outdoor markets</p>
+<p>Event Calendar Integration: Track local events that might impact market traffic</p>
+<p>Competitor Tracking: Note competitor presence and pricing</p>
+<h3>Customer Relationship Management</h3>
+<p>Customer Profiles: Track repeat customers and their purchase history</p>
+<p>Marketing Integration: Email lists, social media promotion planning</p>
+<p>Loyalty Programs: Simple punch card or points tracking</p>
+<h3>Supply Chain Management</h3>
+<p>Supplier Tracking: Manage relationships with ingredient/material suppliers</p>
+<p>Production Planning: Schedule creation of handmade items based on projected demand</p>
+<p>Quality Control: Track product quality issues and their impact on sales</p>
+<h3>Success Metrics to Track</h3>
+<p>User Engagement</p>
+<p>Daily/weekly active users</p>
+<p>Time spent in app during market days</p>
+<p>Feature adoption rates</p>
+<p>User retention over time</p>
+<h3>Business Impact</h3>
+<p>Average increase in vendor profitability</p>
+<p>Time saved on administrative tasks</p>
+<p>Improvement in inventory turnover</p>
+<p>Reduction in unsold product waste</p>
+<h3>Development Approach</h3>
+<p>Phase 1: Core MVP</p>
+<p>Basic market and product management</p>
+<p>Simple sales tracking</p>
+<p>Essential analytics</p>
+<p>Phase 2: Enhanced Operations</p>
+<p>Advanced inventory features</p>
+<p>Comprehensive expense tracking</p>
+<p>Detailed analytics and reporting</p>
+<p>Phase 3: Intelligence & Integration</p>
+<p>Predictive analytics</p>
+<p>Third-party integrations</p>
+<p>Advanced CRM features</p>
+<h3>Key Design Questions to Address</h3>
+<p>How can we make sale entry so fast that vendors won't skip logging transactions during busy periods?</p>
+<p>What's the minimum viable data set needed to provide meaningful insights?</p>
+<p>How do we balance feature richness with app simplicity for users who may not be tech-savvy?</p>
+<p>What offline capabilities are absolutely essential vs. nice-to-have?</p>
+<p>How can we gamify or incentivize consistent data entry?</p>
+<h3>Success Criteria</h3>
+<p>The app should enable vendors to:</p>
+<p>Reduce time spent on administrative tasks by 50%</p>
+<p>Increase average profit margins through better market selection and inventory management</p>
+<p>Make data-driven decisions about market participation</p>
+<p>Spend more time on their craft and customer relationships, less on paperwork</p>
+<p>Build this as a progressive web app that feels native on mobile devices while remaining accessible on desktop for detailed analysis and reporting.</p>
+<p>i will be hosting this webapp on my domain rumfor.com -</p>
+<p>i will be using gitpul ti get updates installed as we make changes</p>
+<p>i will be using namecheap shared hosting - so we need to make sure we are not using resources that require a vm or private docker container</p>
+<p>the markets that end up in the database - will get their own page - we may end up adding more features even down the road too</p>
+<p>anyone can create a new market profile - we need to make the rating system non agressive - we dont want to bomb markets - we just want to know whats going on - some markets are better for different vendors - so maybe trying to have positive up for what the market is good for, instead of negativs</p>
+<p>the market discovery and search sounds about right.</p>
+<p>in the personal market management - they user will be able to click into their markets - and each of their markets will be configurable with variouse things they can track - and get reminds etc - this is almost like a mini app on top - but not seperate - just has be be detailed.</p>
+<p>event logginc and calander yes</p>
+<p>yes to all of it you seem to understand</p>
+<p>i will be hosting this webapp on my domain rumfor.com -</p>
+<p>i will be using gitpul ti get updates installed as we make changes</p>
+<p>i will be using namecheap shared hosting - so we need to make sure we are not using resources that require a vm or private docker container</p>
+<p>we also need to make a good plan md, todo - really think about structure and how this app is factored so we dont need to refactor too much. we will need to make sure we have the neccesary branches and file handlers to make surewe can add new features as need, it needs to be broken up more than we probably thing in the start - lots of files doing little tasks - so that we can keep track. and we also need a master file stucture that gets updated and has notes to requires updates from anyone that sees it. so that we can keep track of what files are doing what and passing teh data around</p>
+<p>and we also need to have a good database that will be expandable - without breaking or getting bogged own - there may be some logical real world example of database templates we can learn from</p>
+<p>when we get this app going - i will be pulling from the github and live testing it - i will do git pulls</p>
+<p>the domain we are going to be ussing is rumfor.com or www.rumfor.com or any regular way of typing the rumfor.com url -</p>
+<p>i also can giv eyou the database details</p>
+<p>xsoucsnq_tracker</p>
+<p>xsoucsnq_trackeruser</p>
+<p>Oswald1986!</p>
+<p>i think we will use postgreSQL</p>
+<p>User: xsoucsnq_rumforuser</p>
+<p>Database: xsoucsnq_rumfor</p>
+<p>password: Oswald1986!</p>
+<p>they will not user it to track inventory - but they can track sales - or costs related to the market like vendor fees -they should be able to decide what they track per market.</p>
+<p>the main goal is tracking markets - and making a database or markets when where, details. so other users can find those markets - people should be able to add private markets - but adding a market should be public by default and check against existing markets to prevent duplicates.</p>
+<p>useres will be adding a market so they can track their things - they have an option to keep it private - theyre personal details - or things they need to track should always be private - but the market details can be public - so that other users can use that market template - the market template should include details about the market - like email, size. esimated turnout, vendor thumbs up or thumbs down if they like it so the markets can be ranked</p>
+<p>there needs to be status for the markets a user adds - like "pending application" "pending approvbal" "pending payment" "approved" - the user will update this as they get more information as they process their work and get their things done and need to update so they know where they are at</p>
+<p>the user should have their own personal calendar. once they have added the market - it will show up in their personal list with the status - they can add or remove it - in that market they can do all their planning privatly. but still be able to add comments to the public market listing</p>
+<p>they can have private notes - but they there can be public notes or message board for the market also -</p>
+<p>duplicates should cross check against multiple atributes to find at least 2 matching stats- so that the user can be warned before they add a duplicate.</p>
+<p>vendor profiles will be fairly minimal on the public side - privatly vendors can see all their info and add friends. but publicly it will just show markets the vendor has attended - this will be when a vendor changes the status of one of there markets to completed.</p>
+<p>markets should always be able to be commented on once made - there should be a tab just to see the markets going on and find ones around you. or different searching, almost like how grindr or the location dating apps work. but we wont use real gps, people can pin on a map where the market is. we dont use map api.</p>
+<p>there should also be a my markets - the ones you have copied. or i guess made if it didnt exist yet.</p>
+<p>but sometimes vendors may want to talk while they are preparing for the market - so each market should havea messabe board -</p>
+<p>the application status - is m ore like the users status with the market - the user can use default status - or type in their own if they want - but there will be some status that are always required - like interested, application sent, approved. and complete - because some of those status may matter how the user shows in the app</p>
+<p>if the user sets the status to approved - they will show on the market as an attending vendor - for example</p>
+<p>the database can be used when deploying - once we get it working i can report things when we push updates - for now we just need to start the projet and get the bassline setup -</p>
+<p>i will be hosting this webapp on my domain rumfor.com -</p>
+<p>i will be using gitpul ti get updates installed as we make changes</p>
+<p>i will be using namecheap shared hosting - so we need to make sure we are not using resources that require a vm or private docker container</p>
+<p>the markets that end up in the database - will get their own page - we may end up adding more features even down the road too</p>
+<p>anyone can create a new market profile - we need to make the rating system non agressive - we dont want to bomb markets - we just want to know whats going on - some markets are better for different vendors - so maybe trying to have positive up for what the market is good for, instead of negativs</p>
+<p>the market discovery and search sounds about right.</p>
+<p>in the personal market management - they user will be able to click into their markets - and each of their markets will be configurable with variouse things they can track - and get reminds etc - this is almost like a mini app on top - but not seperate - just has be be detailed.</p>
+<p>event logginc and calander yes</p>
+<p>yes to all of it you seem to understand</p>
+<p>i will be hosting this webapp on my domain rumfor.com -</p>
+<p>i will be using gitpul ti get updates installed as we make changes</p>
+<p>i will be using namecheap shared hosting - so we need to make sure we are not using resources that require a vm or private docker container</p>
+<p>we also need to make a good plan md, todo - really think about structure and how this app is factored so we dont need to refactor too much. we will need to make sure we have the neccesary branches and file handlers to make surewe can add new features as need, it needs to be broken up more than we probably thing in the start - lots of files doing little tasks - so that we can keep track. and we also need a master file stucture that gets updated and has notes to requires updates from anyone that sees it. so that we can keep track of what files are doing what and passing teh data around</p>
+<p>and we also need to have a good database that will be expandable - without breaking or getting bogged own - there may be some logical real world example of database templates we can learn from</p>
+<p>when we get this app going - i will be pulling from the github and live testing it - i will do git pulls</p>
+<p>the domain we are going to be ussing is rumfor.com or www.rumfor.com or any regular way of typing the rumfor.com url -</p>
+<p>i also can giv eyou the database details</p>
+<p>xsoucsnq_tracker</p>
+<p>xsoucsnq_trackeruser</p>
+<p>Oswald1986!</p>
+<p>i think we will use postgreSQL</p>
+<p>User: xsoucsnq_rumforuser</p>
+<p>Database: xsoucsnq_rumfor</p>
+<p>password: Oswald1986!</p>
+<p>the database can be used when deploying - once we get it working i can report things when we push updates - for now we just need to start the projet and get the bassline setup -</p>
+
+================
+File: src/views/layouts/main.ejs
+================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Rumfor Market Tracker</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/"><h1>Rumfor Market Tracker</h1></a>
+            <ul>
+                <li><a href="/discover">Discover Markets</a></li>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/register">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <%- body %>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Rumfor.com. All rights reserved.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
+
+================
+File: src/views/login.ejs
+================
+<h2>Login</h2>
+<form action="/api/auth/login" method="POST" class="form-stacked">
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <button type="submit" class="btn-primary">Login</button>
+</form>
+<p>Don't have an account? <a href="/register">Register here</a>.</p>
+
+================
+File: src/views/manage-market.ejs
+================
+<h2>Manage: <%= market.name %></h2>
+
+<div class="manage-market-layout">
+    <div class="main-panel">
+        <h3>Update Status</h3>
+        <form action="/api/markets/tracked/<%= market.tracked_market_id %>" method="POST" class="form-inline">
+            <input type="hidden" name="_method" value="PUT"> <!-- Method override for PUT -->
+            <select name="status">
+                <option value="Interested" <%= market.status === 'Interested' ? 'selected' : '' %>>Interested</option>
+                <option value="Application Sent" <%= market.status === 'Application Sent' ? 'selected' : '' %>>Application Sent</option>
+                <option value="Approved" <%= market.status === 'Approved' ? 'selected' : '' %>>Approved</option>
+                <option value="Complete" <%= market.status === 'Complete' ? 'selected' : '' %>>Complete</option>
+                <!-- Custom statuses could be loaded here -->
+            </select>
+            <button type="submit" class="btn-primary">Update Status</button>
+        </form>
+
+        <hr>
+
+        <h3>Log an Event Day</h3>
+        <form action="/api/markets/tracked/<%= market.tracked_market_id %>/events" method="POST" class="form-stacked">
+            <div class="form-group">
+                <label for="event_date">Date</label>
+                <input type="date" name="event_date" required>
+            </div>
+            <div class="form-group">
+                <label for="sales_total">Sales ($)</label>
+                <input type="number" name="sales_total" step="0.01" placeholder="150.50">
+            </div>
+            <div class="form-group">
+                <label for="costs_total">Costs ($)</label>
+                <input type="number" name="costs_total" step="0.01" placeholder="25.00">
+            </div>
+            <div class="form-group">
+                <label for="private_notes">Private Notes</label>
+                <textarea name="private_notes" rows="4"></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Log Day</button>
+        </form>
+    </div>
+    <div class="sidebar-panel">
+        <h3>Event History</h3>
+        <div class="event-history-list">
+            <p>(Event history will be loaded here)</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-inline { display: flex; align-items: center; gap: 1rem; }
+</style>
+
+================
+File: src/views/market.ejs
+================
+<div class="market-detail-header">
+    <h1><%= market.name %></h1>
+    <form action="/api/markets/<%= market.id %>/track" method="POST">
+        <button type="submit" class="btn-primary">Track this Market</button>
+    </form>
+</div>
+
+<div class="market-layout">
+    <div class="market-main-content">
+        <h2>Details</h2>
+        <p><strong>Address:</strong> <%= market.address || 'Not specified' %></p>
+        <p><strong>Website:</strong> <%= market.website ? `<a href="${market.website}" target="_blank">${market.website}</a>` : 'Not specified' %></p>
+        <p><%= market.description %></p>
+
+        <h2>Positive Attributes</h2>
+        <div class="attribute-tags">
+            <% if (market.attributes && market.attributes.length) { %>
+                <% market.attributes.forEach(attr => { %>
+                    <span class="tag">
+                        <%= attr.attribute_name %> (<%= attr.vote_count %>)
+                        <button class="vote-btn" data-market-id="<%= market.id %>" data-attribute-id="<%= attr.id %>">+</button>
+                    </span>
+                <% }) %>
+            <% } else { %>
+                <p>No attributes have been voted on yet.</p>
+            <% } %>
+        </div>
+
+        <h2>Attending Vendors</h2>
+        <ul>
+            <!-- Attending vendor logic will go here -->
+            <li>(Coming Soon)</li>
+        </ul>
+    </div>
+    <div class="market-sidebar">
+        <h3>Message Board</h3>
+        <div class="message-board">
+            <!-- Messages will be loaded here via client-side JS -->
+            <p><em>Loading messages...</em></p>
+        </div>
+        <form action="/api/markets/<%= market.id %>/messages" method="POST">
+            <textarea name="content" placeholder="Ask a question or leave a comment..."></textarea>
+            <button type="submit" class="btn-primary">Post</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Fetch and display messages on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+        const marketId = '<%= market.id %>';
+        const messageBoard = document.querySelector('.message-board');
+
+        try {
+            const response = await fetch(`/api/markets/${marketId}/messages`);
+            if (!response.ok) throw new Error('Failed to fetch messages');
+
+            const messages = await response.json();
+            messageBoard.innerHTML = ''; // Clear loading message
+
+            if (messages.length === 0) {
+                messageBoard.innerHTML = '<p>No messages yet. Be the first!</p>';
+            } else {
+                messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add('message');
+                    // Note: In a real app, user data would be joined in the query
+                    messageDiv.innerHTML = `<p><strong>User ${message.user_id}:</strong> ${message.content}</p><small>${new Date(message.created_at).toLocaleDateString()}</small>`;
+                    messageBoard.appendChild(messageDiv);
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+            messageBoard.innerHTML = '<p>Could not load messages.</p>';
+        }
+    });
+</script>
+
+================
+File: src/views/register.ejs
+================
+<h2>Register</h2>
+<form action="/api/auth/register" method="POST" class="form-stacked">
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required minlength="8">
+    </div>
+    <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <input type="password" id="confirm-password" name="confirm-password" required>
+    </div>
+    <button type="submit" class="btn-primary">Register</button>
+</form>
+<p>Already have an account? <a href="/login">Login here</a>.</p>
+
+================
+File: tests/auth.controller.test.js
+================
+const authController = require('../src/controllers/auth.controller');
+const authService = require('../src/services/auth.service');
+
+// Mock the service
+jest.mock('../src/services/auth.service');
+
+// Mock Express request and response objects
+const httpMocks = require('node-mocks-http');
+
+describe('Auth Controller', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('register', () => {
+    it('should call authService.register and return 201 on success', async () => {
+      const req = httpMocks.createRequest({
+        method: 'POST',
+        url: '/api/auth/register',
+        body: {
+          email: 'test@example.com',
+          password: 'password123',
+        },
+      });
+      const res = httpMocks.createResponse();
+      const user = { id: 1, email: 'test@example.com' };
+
+      authService.register.mockResolvedValue(user);
+
+      await authController.register(req, res);
+
+      expect(authService.register).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(res.statusCode).toBe(201);
+      expect(res._getJSONData()).toEqual({
+        message: 'User registered successfully.',
+        userId: user.id,
+      });
+    });
+
+    it('should return 400 if email or password is not provided', async () => {
+        const req = httpMocks.createRequest({
+            method: 'POST',
+            url: '/api/auth/register',
+            body: {
+              email: 'test@example.com',
+              // password missing
+            },
+          });
+          const res = httpMocks.createResponse();
+
+          await authController.register(req, res);
+
+          expect(res.statusCode).toBe(400);
+          expect(res._getJSONData()).toEqual({ message: 'Email and password are required.' });
+    });
+  });
+
+  describe('login', () => {
+    it('should call authService.login and return token on success', async () => {
+        const req = httpMocks.createRequest({
+            method: 'POST',
+            url: '/api/auth/login',
+            body: {
+              email: 'test@example.com',
+              password: 'password123',
+            },
+          });
+          const res = httpMocks.createResponse();
+          const token = { token: 'test-jwt-token' };
+
+          authService.login.mockResolvedValue(token);
+
+          await authController.login(req, res);
+
+          expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password123');
+          expect(res.statusCode).toBe(200);
+          expect(res._getJSONData()).toEqual({
+            message: 'Login successful.',
+            token: token.token,
+          });
+    });
+
+    it('should return 401 on login failure', async () => {
+        const req = httpMocks.createRequest({
+            method: 'POST',
+            url: '/api/auth/login',
+            body: {
+              email: 'test@example.com',
+              password: 'wrongpassword',
+            },
+          });
+          const res = httpMocks.createResponse();
+
+          authService.login.mockRejectedValue(new Error('Invalid credentials'));
+
+          await authController.login(req, res);
+
+          expect(res.statusCode).toBe(401);
+          expect(res._getJSONData()).toEqual({
+            message: 'Invalid credentials.',
+            error: 'Invalid credentials'
+          });
+    });
+  });
+});
+
+================
+File: tests/auth.service.test.js
+================
+const authService = require('../src/services/auth.service');
+const db = require('../src/db/connection');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+// Mock the dependencies
+jest.mock('../src/db/connection', () => ({
+  query: jest.fn(),
+}));
+jest.mock('bcryptjs'); // Auto-mocked
+jest.mock('jsonwebtoken'); // Auto-mocked
+
+describe('Auth Service', () => {
+  afterEach(() => {
+    jest.clearAllMocks(); // Clear mocks after each test
+  });
+
+  describe('register', () => {
+    it('should hash the password and create a new user', async () => {
+      const email = 'test@example.com';
+      const password = 'password123';
+      const hashedPassword = 'hashedpassword';
+      const mockUser = { id: 1, email };
+
+      bcrypt.hash.mockResolvedValue(hashedPassword);
+      db.query.mockResolvedValue({ rows: [mockUser] });
+
+      const result = await authService.register(email, password);
+
+      expect(bcrypt.hash).toHaveBeenCalledWith(password, 10);
+      expect(db.query).toHaveBeenCalledWith(
+        'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email',
+        [email, hashedPassword]
+      );
+      expect(result).toEqual(mockUser);
+    });
+
+    it('should throw an error if database query fails', async () => {
+      const email = 'test@example.com';
+      const password = 'password123';
+      const errorMessage = 'DB error';
+
+      bcrypt.hash.mockResolvedValue('hashedpassword');
+      db.query.mockRejectedValue(new Error(errorMessage));
+
+      await expect(authService.register(email, password)).rejects.toThrow(errorMessage);
+    });
+  });
+
+  describe('login', () => {
+    const email = 'test@example.com';
+    const password = 'password123';
+    const user = { id: 1, email, password_hash: 'hashedpassword' };
+    const token = 'test-jwt-token';
+
+    it('should return a token for valid credentials', async () => {
+      db.query.mockResolvedValue({ rows: [user] });
+      bcrypt.compare.mockResolvedValue(true);
+      jwt.sign.mockReturnValue(token);
+
+      const result = await authService.login(email, password);
+
+      expect(db.query).toHaveBeenCalledWith('SELECT * FROM users WHERE email = $1', [email]);
+      expect(bcrypt.compare).toHaveBeenCalledWith(password, user.password_hash);
+      expect(jwt.sign).toHaveBeenCalledWith({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      expect(result).toEqual({ token });
+    });
+
+    it('should throw an error if user is not found', async () => {
+      db.query.mockResolvedValue({ rows: [] });
+
+      await expect(authService.login(email, password)).rejects.toThrow('User not found');
+    });
+
+    it('should throw an error for invalid credentials', async () => {
+      db.query.mockResolvedValue({ rows: [user] });
+      bcrypt.compare.mockResolvedValue(false);
+
+      await expect(authService.login(email, password)).rejects.toThrow('Invalid credentials');
+    });
+  });
+});
+
+================
+File: tests/market.service.test.js
+================
+const marketService = require('../src/services/market.service');
+const db = require('../src/db/connection');
+
+// The db connection is globally mocked in tests/setup.js
+
+describe('Market Service', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getAll', () => {
+    it('should return all markets from the database', async () => {
+      const mockMarkets = [
+        { id: 1, name: 'Market A' },
+        { id: 2, name: 'Market B' },
+      ];
+      db.query.mockResolvedValue({ rows: mockMarkets });
+
+      const markets = await marketService.getAll();
+
+      expect(db.query).toHaveBeenCalledWith('SELECT * FROM markets ORDER BY created_at DESC');
+      expect(markets).toEqual(mockMarkets);
+    });
+  });
+
+  describe('getById', () => {
+    it('should return a single market with its attributes', async () => {
+      const mockMarket = { id: 1, name: 'Market A' };
+      const mockAttributes = [{ id: 1, attribute_name: 'Test', vote_count: 0 }];
+
+      // Mock the two separate queries made by the service function
+      db.query
+        .mockResolvedValueOnce({ rows: [mockMarket] }) // First call for market
+        .mockResolvedValueOnce({ rows: mockAttributes }); // Second call for attributes
+
+      const market = await marketService.getById(1);
+
+      expect(db.query).toHaveBeenCalledWith('SELECT * FROM markets WHERE id = $1', [1]);
+      expect(db.query).toHaveBeenCalledWith(expect.stringContaining('LEFT JOIN market_attribute_votes'), [1]);
+      expect(market.attributes).toEqual(mockAttributes);
+      expect(market.name).toEqual(mockMarket.name);
+    });
+
+    it('should return undefined if market is not found', async () => {
+      db.query.mockResolvedValue({ rows: [] });
+
+      const market = await marketService.getById(999);
+
+      expect(db.query).toHaveBeenCalledWith('SELECT * FROM markets WHERE id = $1', [999]);
+      expect(market).toBeUndefined();
+    });
+  });
+
+  describe('create', () => {
+    it('should insert a new market and return it', async () => {
+      const marketData = { name: 'New Market', description: 'A brand new market' };
+      const userId = 1;
+      const newMarket = { id: 3, ...marketData, created_by_user_id: userId };
+      db.query.mockResolvedValue({ rows: [newMarket] });
+
+      const result = await marketService.create(marketData, userId);
+
+      expect(db.query).toHaveBeenCalled();
+      expect(result).toEqual(newMarket);
+    });
+  });
+
+  describe('update', () => {
+    it('should update an existing market and return it', async () => {
+      const marketData = { name: 'Updated Market', description: 'Updated desc' };
+      const marketId = 1;
+      const updatedMarket = { id: marketId, ...marketData };
+      db.query.mockResolvedValue({ rows: [updatedMarket] });
+
+      const result = await marketService.update(marketId, marketData);
+
+      expect(db.query).toHaveBeenCalled();
+      expect(result).toEqual(updatedMarket);
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete a market', async () => {
+      const marketId = 1;
+      db.query.mockResolvedValue({ rowCount: 1 });
+
+      await marketService.remove(marketId);
+
+      expect(db.query).toHaveBeenCalledWith('DELETE FROM markets WHERE id = $1', [marketId]);
+    });
+  });
+
+  describe('addVoteForAttribute', () => {
+    it('should cast a vote for a market attribute', async () => {
+      const userId = 1;
+      const marketId = 1;
+      const attributeId = 1;
+      db.query.mockResolvedValue({ rows: [{ id: 1 }] });
+
+      await marketService.addVoteForAttribute(userId, marketId, attributeId);
+
+      expect(db.query).toHaveBeenCalled();
+      const firstCall = db.query.mock.calls[0];
+      expect(firstCall[0]).toMatch(/on conflict/i);
+      expect(firstCall[1]).toEqual([userId, marketId, attributeId]);
+    });
+  });
+});
+
+================
+File: tests/setup.js
+================
+// This file runs before each test suite.
+// We are mocking the database connection globally to prevent tests from
+// trying to connect to a real database, which solves module resolution issues in this environment.
+jest.mock('../src/db/connection', () => ({
+  query: jest.fn().mockResolvedValue({ rows: [] }),
+  pool: {
+    connect: jest.fn(),
+    end: jest.fn(),
+  },
+}));
+
+================
+File: tests/trackedMarket.service.test.js
+================
+const trackedMarketService = require('../src/services/trackedMarket.service');
+const db = require('../src/db/connection');
+
+// The db connection is globally mocked in tests/setup.js
+
+describe('Tracked Market Service', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getAllForUser', () => {
+    it('should return a list of markets tracked by a user', async () => {
+      const userId = 1;
+      const mockTrackedMarkets = [
+        { tracked_market_id: 1, status: 'Approved', market_id: 10, name: 'City Market' },
+        { tracked_market_id: 2, status: 'Interested', market_id: 20, name: 'Art Fair' },
+      ];
+      db.query.mockResolvedValue({ rows: mockTrackedMarkets });
+
+      const result = await trackedMarketService.getAllForUser(userId);
+
+      expect(db.query).toHaveBeenCalled();
+      expect(result).toEqual(mockTrackedMarkets);
+    });
+  });
+
+  describe('add', () => {
+    it('should create a new tracked market entry', async () => {
+      const userId = 1;
+      const marketId = 10;
+      const newTrackedMarket = { id: 3, user_id: userId, market_id: marketId, status: 'Interested' };
+      db.query.mockResolvedValue({ rows: [newTrackedMarket] });
+
+      const result = await trackedMarketService.add(userId, marketId);
+
+      expect(db.query).toHaveBeenCalledWith(
+        'INSERT INTO tracked_markets (user_id, market_id) VALUES ($1, $2) RETURNING *',
+        [userId, marketId]
+      );
+      expect(result).toEqual(newTrackedMarket);
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete a tracked market entry', async () => {
+      const userId = 1;
+      const marketId = 10;
+      db.query.mockResolvedValue();
+
+      await trackedMarketService.remove(userId, marketId);
+
+      expect(db.query).toHaveBeenCalledWith(
+        'DELETE FROM tracked_markets WHERE user_id = $1 AND market_id = $2',
+        [userId, marketId]
+      );
+    });
+  });
+
+  describe('updateStatus', () => {
+    it('should update the status of a tracked market', async () => {
+      const userId = 1;
+      const trackedMarketId = 1;
+      const newStatus = 'Approved';
+      const updatedTrackedMarket = { id: trackedMarketId, user_id: userId, market_id: 10, status: newStatus };
+      db.query.mockResolvedValue({ rows: [updatedTrackedMarket] });
+
+      const result = await trackedMarketService.updateStatus(userId, trackedMarketId, newStatus);
+
+      expect(db.query).toHaveBeenCalledWith(
+        'UPDATE tracked_markets SET status = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
+        [newStatus, trackedMarketId, userId]
+      );
+      expect(result).toEqual(updatedTrackedMarket);
+    });
+  });
+
+  describe('getTrackedMarketById', () => {
+    it('should return a single tracked market with its details', async () => {
+      const userId = 1;
+      const trackedMarketId = 1;
+      const mockResult = { tracked_market_id: 1, status: 'Approved', name: 'City Market' };
+      db.query.mockResolvedValue({ rows: [mockResult] });
+
+      const result = await trackedMarketService.getTrackedMarketById(userId, trackedMarketId);
+
+      expect(db.query).toHaveBeenCalled();
+      expect(result).toEqual(mockResult);
+    });
+  });
+});
+
+
+
+================================================================
+End of Codebase
+================================================================
