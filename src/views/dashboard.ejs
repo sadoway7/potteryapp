@@ -1,0 +1,30 @@
+<h2>My Tracked Markets</h2>
+
+<div class="tracked-markets-container">
+    <% if (markets && markets.length) { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Market Name</th>
+                    <th>Address</th>
+                    <th>My Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% markets.forEach(market => { %>
+                    <tr>
+                        <td><%= market.name %></td>
+                        <td><%= market.address %></td>
+                        <td><span class="status-badge"><%= market.status %></span></td>
+                        <td>
+                            <a href="/dashboard/market/<%= market.tracked_market_id %>" class="btn-secondary btn-sm">Manage</a>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p>You are not tracking any markets yet. <a href="/discover">Discover some markets</a> to get started!</p>
+    <% } %>
+</div>
