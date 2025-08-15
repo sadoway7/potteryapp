@@ -1,0 +1,51 @@
+<h2>Manage: <%= market.name %></h2>
+
+<div class="manage-market-layout">
+    <div class="main-panel">
+        <h3>Update Status</h3>
+        <form action="/api/markets/tracked/<%= market.tracked_market_id %>" method="POST" class="form-inline">
+            <input type="hidden" name="_method" value="PUT"> <!-- Method override for PUT -->
+            <select name="status">
+                <option value="Interested" <%= market.status === 'Interested' ? 'selected' : '' %>>Interested</option>
+                <option value="Application Sent" <%= market.status === 'Application Sent' ? 'selected' : '' %>>Application Sent</option>
+                <option value="Approved" <%= market.status === 'Approved' ? 'selected' : '' %>>Approved</option>
+                <option value="Complete" <%= market.status === 'Complete' ? 'selected' : '' %>>Complete</option>
+                <!-- Custom statuses could be loaded here -->
+            </select>
+            <button type="submit" class="btn-primary">Update Status</button>
+        </form>
+
+        <hr>
+
+        <h3>Log an Event Day</h3>
+        <form action="/api/markets/tracked/<%= market.tracked_market_id %>/events" method="POST" class="form-stacked">
+            <div class="form-group">
+                <label for="event_date">Date</label>
+                <input type="date" name="event_date" required>
+            </div>
+            <div class="form-group">
+                <label for="sales_total">Sales ($)</label>
+                <input type="number" name="sales_total" step="0.01" placeholder="150.50">
+            </div>
+            <div class="form-group">
+                <label for="costs_total">Costs ($)</label>
+                <input type="number" name="costs_total" step="0.01" placeholder="25.00">
+            </div>
+            <div class="form-group">
+                <label for="private_notes">Private Notes</label>
+                <textarea name="private_notes" rows="4"></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Log Day</button>
+        </form>
+    </div>
+    <div class="sidebar-panel">
+        <h3>Event History</h3>
+        <div class="event-history-list">
+            <p>(Event history will be loaded here)</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-inline { display: flex; align-items: center; gap: 1rem; }
+</style>

@@ -1,0 +1,19 @@
+<h2>Discover Markets</h2>
+<div class="search-bar">
+    <input type="search" placeholder="Search by name, city, or zip code...">
+    <button class="btn-primary">Search</button>
+</div>
+
+<div class="market-list">
+    <% if (markets && markets.length) { %>
+        <% markets.forEach(market => { %>
+            <div class="market-card">
+                <h3><%= market.name %></h3>
+                <p><%= market.address || 'No address provided' %></p>
+                <a href="/market/<%= market.id %>" class="btn-secondary">View Details</a>
+            </div>
+        <% }) %>
+    <% } else { %>
+        <p>No markets found. Why not be the first to <a href="/markets/new">add one</a>?</p>
+    <% } %>
+</div>

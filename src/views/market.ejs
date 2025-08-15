@@ -1,0 +1,77 @@
+<div class="market-detail-header">
+    <h1><%= market.name %></h1>
+    <form action="/api/markets/<%= market.id %>/track" method="POST">
+        <button type="submit" class="btn-primary">Track this Market</button>
+    </form>
+</div>
+
+<div class="market-layout">
+    <div class="market-main-content">
+        <h2>Details</h2>
+        <p><strong>Address:</strong> <%= market.address || 'Not specified' %></p>
+        <p><strong>Website:</strong> <%= market.website ? `<a href="${market.website}" target="_blank">${market.website}</a>` : 'Not specified' %></p>
+        <p><%= market.description %></p>
+
+        <h2>Positive Attributes</h2>
+        <div class="attribute-tags">
+            <% if (market.attributes && market.attributes.length) { %>
+                <% market.attributes.forEach(attr => { %>
+                    <span class="tag">
+                        <%= attr.attribute_name %> (<%= attr.vote_count %>)
+                        <button class="vote-btn" data-market-id="<%= market.id %>" data-attribute-id="<%= attr.id %>">+</button>
+                    </span>
+                <% }) %>
+            <% } else { %>
+                <p>No attributes have been voted on yet.</p>
+            <% } %>
+        </div>
+
+        <h2>Attending Vendors</h2>
+        <ul>
+            <!-- Attending vendor logic will go here -->
+            <li>(Coming Soon)</li>
+        </ul>
+    </div>
+    <div class="market-sidebar">
+        <h3>Message Board</h3>
+        <div class="message-board">
+            <!-- Messages will be loaded here via client-side JS -->
+            <p><em>Loading messages...</em></p>
+        </div>
+        <form action="/api/markets/<%= market.id %>/messages" method="POST">
+            <textarea name="content" placeholder="Ask a question or leave a comment..."></textarea>
+            <button type="submit" class="btn-primary">Post</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Fetch and display messages on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+        const marketId = '<%= market.id %>';
+        const messageBoard = document.querySelector('.message-board');
+
+        try {
+            const response = await fetch(`/api/markets/${marketId}/messages`);
+            if (!response.ok) throw new Error('Failed to fetch messages');
+
+            const messages = await response.json();
+            messageBoard.innerHTML = ''; // Clear loading message
+
+            if (messages.length === 0) {
+                messageBoard.innerHTML = '<p>No messages yet. Be the first!</p>';
+            } else {
+                messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add('message');
+                    // Note: In a real app, user data would be joined in the query
+                    messageDiv.innerHTML = `<p><strong>User ${message.user_id}:</strong> ${message.content}</p><small>${new Date(message.created_at).toLocaleDateString()}</small>`;
+                    messageBoard.appendChild(messageDiv);
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+            messageBoard.innerHTML = '<p>Could not load messages.</p>';
+        }
+    });
+</script>
