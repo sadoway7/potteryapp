@@ -9,12 +9,16 @@ let mockQuery = () => Promise.resolve({ rows: [] });
 
 const createPoolWithRetry = async (config, retries = 0) => {
   try {
+    console.log('Creating new pool with config:', {
+      ...config,
+      password: '*****' // Don't log actual password
+    });
     const pool = new Pool({
       ...config,
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
       max: 20,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      ssl: { rejectUnauthorized: false } // Force SSL for NameCheap
     });
     
     // Test connection immediately
