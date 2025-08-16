@@ -1,48 +1,52 @@
 const db = require('../db/connection');
 
 const getAll = async (queryParams = {}) => {
-  console.log('Executing getAll with params:', queryParams);
-  let query = 'SELECT * FROM markets';
-  const values = [];
-  const conditions = [];
-  console.log('Initial query:', query);
-
-  // Handle search term
-  if (queryParams.search) {
-    conditions.push(`(
-      LOWER(name) LIKE LOWER($${values.length + 1}) OR
-      LOWER(address) LIKE LOWER($${values.length + 1})
-    `);
-    values.push(`%${queryParams.search}%`);
-  }
-
-  // Handle zip code filter
-  if (queryParams.zip) {
-    conditions.push(`address LIKE $${values.length + 1}`);
-    values.push(`%${queryParams.zip}%`);
-  }
-
-  // Handle city filter
-  if (queryParams.city) {
-    conditions.push(`LOWER(address) LIKE LOWER($${values.length + 1})`);
-    values.push(`%${queryParams.city}%`);
-  }
-
-  // Combine conditions
-  if (conditions.length) {
-    query += ' WHERE ' + conditions.join(' AND ');
-  }
-
-  query += ' ORDER BY created_at DESC';
-
   try {
-    console.log('Final query:', query, 'Values:', values);
+    console.log('Executing getAll with params:', queryParams);
+    let query = 'SELECT * FROM markets';
+    const values = [];
+    const conditions = [];
+
+    // Handle search term
+    if (queryParams.search) {
+      conditions.push(`(
+        LOWER(name) LIKE LOWER($${values.length + 1}) OR
+        LOWER(address) LIKE LOWER($${values.length + 1})
+      )`);
+      values.push(`%${queryParams.search}%`);
+    }
+
+    // Handle zip code filter
+    if (queryParams.zip) {
+      conditions.push(`address LIKE $${values.length + 1}`);
+      values.push(`%${queryParams.zip}%`);
+    }
+
+    // Handle city filter
+    if (queryParams.city) {
+      conditions.push(`LOWER(address) LIKE LOWER($${values.length + 1})`);
+      values.push(`%${queryParams.city}%`);
+    }
+
+    // Combine conditions
+    if (conditions.length) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    query += ' ORDER BY created_at DESC';
+
+    console.log('Executing query:', query, 'with values:', values);
     const result = await db.query(query, values);
-    console.log('Query successful, rows returned:', result.rows.length);
+    console.log('Query returned', result.rows.length, 'rows');
     return result.rows;
   } catch (err) {
-    console.error('Database query failed:', err);
-    throw err;
+    console.error('Database query failed:', {
+      error: err.message,
+      stack: err.stack,
+      query: query,
+      values: values
+    });
+    throw new Error('Failed to fetch markets: ' + err.message);
   }
 };
 
