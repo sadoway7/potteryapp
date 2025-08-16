@@ -18,12 +18,16 @@ const createPoolWithRetry = async (config, retries = 0) => {
       host: config.host,
       database: config.database,
       password: config.password,
-      port: parseInt(config.port), // Ensure port is number
+      port: parseInt(config.port),
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
       max: 20,
       ssl: false,
-      application_name: 'potteryapp'
+      application_name: 'potteryapp',
+      // NameCheap PostgreSQL specific settings
+      options: '-c search_path=public',
+      connectionTimeoutMillis: 10000,
+      query_timeout: 10000
     });
     console.log('Pool created, testing connection...');
     
