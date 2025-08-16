@@ -103,6 +103,8 @@ Do not rely on the `.env` file for production. Use cPanel's interface to set var
     *   `DB_PASSWORD`: Your database password
     *   `DB_DATABASE`: Your database name (e.g., `xsoucsnq_rumfor`)
     *   `DB_PORT`: `5432` (default for PostgreSQL)
+    *   `DB_RETRY_LIMIT`: `5` (number of connection retries)
+    *   `DB_RETRY_DELAY`: `3000` (retry delay in milliseconds)
     *   `JWT_SECRET`: A long, random, secret string for signing tokens.
     *   `NODE_ENV`: `production`
 
