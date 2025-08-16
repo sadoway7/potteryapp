@@ -115,13 +115,35 @@ const testDbConnection = async () => {
   }
 };
 
+const getPool = async () => {
+  if (!pool) {
+    await new Promise(resolve => {
+      const checkPool = () => {
+        if (pool) return resolve();
+        setTimeout(checkPool, 100);
+      };
+      checkPool();
+    });
+  }
+  return pool;
+};
+
 module.exports = {
-  query: (text, params) => pool.query(text, params),
+  query: async (text, params) => {
+    const activePool = await getPool();
+    return activePool.query(text, params);
+  },
   testDbConnection,
-  pool,
-  getConnectionStats: () => ({
-    totalCount: pool.totalCount,
-    idleCount: pool.idleCount,
-    waitingCount: pool.waitingCount
-  })
+  get pool() {
+    if (!pool) throw new Error('Database pool not initialized yet');
+    return pool;
+  },
+  getConnectionStats: async () => {
+    const activePool = await getPool();
+    return {
+      totalCount: activePool.totalCount,
+      idleCount: activePool.idleCount,
+      waitingCount: activePool.waitingCount
+    }
+  }
 };
