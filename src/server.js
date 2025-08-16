@@ -34,6 +34,9 @@ const apiRoutes = require('./routes/index');
 app.use('/api', apiRoutes);
 
 const viewRoutes = require('./routes/view.routes');
+// Demo routes
+const demoRoutes = require('./routes/demo.routes');
+app.use('/', demoRoutes);
 app.use('/', viewRoutes);
 
 // Error handling middleware

@@ -39,6 +39,28 @@
             </div>
         <% }) %>
     <% } else { %>
-        <p>No markets found. Why not be the first to <a href="/markets/new">add one</a>?</p>
+        <div class="empty-state">
+            <h3>Welcome to Rumfor Market!</h3>
+            <p>No markets have been added yet.</p>
+            <div class="cta-buttons">
+                <a href="/markets/new" class="btn-primary">Add First Market</a>
+                <a href="/demo" class="btn-secondary">View Demo Data</a>
+            </div>
+        </div>
     <% } %>
 </div>
+
+<style>
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+.cta-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+</style>
