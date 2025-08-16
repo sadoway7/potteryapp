@@ -62,9 +62,9 @@ cPanel has a dedicated tool for running Node.js applications.
 9.  **Install Dependencies:**
     *   At the top of the app's configuration page, you will see a command to enter the virtual environment. It will look like this: `source /home/YOUR_CPANEL_USERNAME/nodevenv/YOUR_APP_ROOT/XX/bin/activate`.
     *   Connect via SSH (from Part 1).
-    *   Navigate to your application's directory:
+    *   Activate Node.js environment and navigate to your application's directory:
         ```bash
-        cd ~/apps/market-tracker
+        source /home/xsoucsnq/nodevenv/rumfor.com/24/bin/activate && cd /home/xsoucsnq/rumfor.com
         ```
     *   Run the `npm install` command to install all the dependencies from `package.json`:
         ```bash
