@@ -2,7 +2,7 @@ const { testDbConnection } = require('./src/db/connection');
 
 (async () => {
   console.log('Testing database connection...');
-  const success = await testDbConnection();
-  console.log(success ? '✅ Connection successful' : '❌ Connection failed');
-  process.exit(success ? 0 : 1);
+  const isConnected = await testDbConnection();
+  console.log(isConnected ? '✅ Connection successful' : '❌ Connection failed');
+  process.exit(isConnected ? 0 : 1);
 })();
