@@ -1,9 +1,11 @@
 const db = require('../db/connection');
 
 const getAll = async (queryParams = {}) => {
+  console.log('Executing getAll with params:', queryParams);
   let query = 'SELECT * FROM markets';
   const values = [];
   const conditions = [];
+  console.log('Initial query:', query);
 
   // Handle search term
   if (queryParams.search) {
@@ -33,8 +35,15 @@ const getAll = async (queryParams = {}) => {
 
   query += ' ORDER BY created_at DESC';
 
-  const result = await db.query(query, values);
-  return result.rows;
+  try {
+    console.log('Final query:', query, 'Values:', values);
+    const result = await db.query(query, values);
+    console.log('Query successful, rows returned:', result.rows.length);
+    return result.rows;
+  } catch (err) {
+    console.error('Database query failed:', err);
+    throw err;
+  }
 };
 
 const getById = async (id) => {
