@@ -9,7 +9,11 @@ router.get('/register', (req, res) => {
 
 // GET /login - Login form
 router.get('/login', (req, res) => {
-  res.render('login', { error: null, email: '' });
+  res.render('login', {
+    error: null,
+    email: '',
+    csrfToken: req.csrfToken() // Generate CSRF token for the form
+  });
 });
 
 // POST /api/auth/register - User registration

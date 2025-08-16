@@ -30,14 +30,51 @@ const getById = async (id) => {
 };
 
 const create = async (marketData, userId) => {
-  const { name, description, address, latitude, longitude, contact_email, website } = marketData;
-  const result = await db.query(
-    `INSERT INTO markets (name, description, address, latitude, longitude, contact_email, website, created_by_user_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-     RETURNING *`,
-    [name, description, address, latitude, longitude, contact_email, website, userId]
+  // Validate required fields
+  const { name, description, website } = marketData;
+  if (!name || !description || !website) {
+    throw new Error('Name, description and website are required');
+  }
+
+  // Validate URL format
+  try {
+    new URL(website);
+  } catch (err) {
+    throw new Error('Website must be a valid URL');
+  }
+
+  // Check for existing market with same name (case-insensitive)
+  const existingMarket = await db.query(
+    'SELECT id FROM markets WHERE LOWER(name) = LOWER($1)',
+    [name]
   );
-  return result.rows[0];
+  if (existingMarket.rows.length > 0) {
+    throw new Error('Market name already exists');
+  }
+
+  // Validate user exists
+  const userResult = await db.query('SELECT id FROM users WHERE id = $1', [userId]);
+  if (userResult.rows.length === 0) {
+    throw new Error('Invalid user');
+  }
+
+  // Create market
+  const { address, latitude, longitude, contact_email } = marketData;
+  try {
+    const result = await db.query(
+      `INSERT INTO markets (name, description, address, latitude, longitude, contact_email, website, created_by_user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [name, description, address, latitude, longitude, contact_email, website, userId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    // Handle database errors
+    if (err.code === '23505') { // Unique violation
+      throw new Error('Market name already exists');
+    }
+    throw new Error('Failed to create market');
+  }
 };
 
 const update = async (id, marketData) => {

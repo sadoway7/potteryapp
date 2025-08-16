@@ -116,7 +116,85 @@ Do not rely on the `.env` file for production. Use cPanel's interface to set var
 
 ---
 
-## Part 7: Updating the Application in the Future
+## Part 7: Database Backups
+
+1. **cPanel Backup Tool:**
+   - Go to cPanel "Files" section -> "Backup"
+   - Download "Full Backup" or "Partial Backup" (select database only)
+   - Schedule weekly backups via "Backup Wizard"
+
+2. **Automated Script:**
+   ```bash
+   # SSH into server
+   pg_dump -U YOUR_DB_USER -d YOUR_DB_NAME > backup_$(date +%F).sql
+   ```
+
+3. **Restoration:**
+   ```bash
+   psql -U YOUR_DB_USER -d YOUR_DB_NAME < backup_file.sql
+   ```
+
+## Part 8: Troubleshooting
+
+**Common Issues:**
+- **Application not starting:** Check Node.js version matches locally
+- **Database connection errors:** Verify environment variables
+- **Migration failures:** Ensure user has CREATE TABLE privileges
+- **Static files not loading:** Check public directory permissions
+
+**Log Locations:**
+- Application logs: `~/logs/nodejs/YOUR_APP.log`
+- Access logs: `~/logs/access_log`
+- Error logs: `~/logs/error_log`
+
+## Part 9: Monitoring
+
+1. **cPanel Metrics:**
+   - "Metrics" section -> "Resource Usage"
+   - "Metrics" section -> "Errors"
+
+2. **Application Monitoring:**
+   ```bash
+   # Install PM2 process manager
+   npm install pm2 -g
+   pm2 start src/server.js
+   pm2 monit
+   ```
+
+3. **Uptime Monitoring:**
+   - Use external services (UptimeRobot, etc.)
+   - Set up alerts for HTTP 5xx errors
+
+## Part 11: Rollback Procedure
+
+1. **Identify last good commit:**
+   ```bash
+   git log --oneline
+   ```
+
+2. **Revert code:**
+   ```bash
+   git reset --hard COMMIT_HASH
+   ```
+
+3. **Force push to remote:**
+   ```bash
+   git push origin HEAD --force
+   ```
+
+4. **Revert database (if needed):**
+   ```bash
+   psql -U YOUR_DB_USER -d YOUR_DB_NAME < backup_file.sql
+   ```
+
+5. **Restart application:**
+   - In cPanel: "Setup Node.js App" -> "Restart"
+
+6. **Verify:**
+   - Check application functionality
+   - Review error logs for issues
+
+## Part 10: Updating the Application in the Future
 
 When you have new code to deploy:
 

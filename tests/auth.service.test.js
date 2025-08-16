@@ -51,25 +51,23 @@ describe('Auth Service', () => {
     const email = 'test@example.com';
     const password = 'password123';
     const user = { id: 1, email, password_hash: 'hashedpassword' };
-    const token = 'test-jwt-token';
+    const userWithoutPassword = { id: 1, email };
 
-    it('should return a token for valid credentials', async () => {
+    it('should return user without password for valid credentials', async () => {
       db.query.mockResolvedValue({ rows: [user] });
       bcrypt.compare.mockResolvedValue(true);
-      jwt.sign.mockReturnValue(token);
 
       const result = await authService.login(email, password);
 
       expect(db.query).toHaveBeenCalledWith('SELECT * FROM users WHERE email = $1', [email]);
       expect(bcrypt.compare).toHaveBeenCalledWith(password, user.password_hash);
-      expect(jwt.sign).toHaveBeenCalledWith({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      expect(result).toEqual({ token });
+      expect(result).toEqual(userWithoutPassword);
     });
 
     it('should throw an error if user is not found', async () => {
       db.query.mockResolvedValue({ rows: [] });
 
-      await expect(authService.login(email, password)).rejects.toThrow('User not found');
+      await expect(authService.login(email, password)).rejects.toThrow('Invalid credentials');
     });
 
     it('should throw an error for invalid credentials', async () => {

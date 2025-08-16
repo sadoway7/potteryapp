@@ -56,7 +56,7 @@ describe('Auth Controller', () => {
   });
 
   describe('login', () => {
-    it('should call authService.login and return token on success', async () => {
+    it('should call authService.login, set token cookie with 1h expiration and redirect on success', async () => {
         const req = httpMocks.createRequest({
             method: 'POST',
             url: '/api/auth/login',
@@ -66,21 +66,50 @@ describe('Auth Controller', () => {
             },
           });
           const res = httpMocks.createResponse();
-          const token = { token: 'test-jwt-token' };
+          const user = { id: 1, email: 'test@example.com' };
 
-          authService.login.mockResolvedValue(token);
+          authService.login.mockResolvedValue(user);
 
           await authController.login(req, res);
 
           expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password123');
-          expect(res.statusCode).toBe(200);
-          expect(res._getJSONData()).toEqual({
-            message: 'Login successful.',
-            token: token.token,
-          });
+          expect(res.statusCode).toBe(302);
+          expect(res._getRedirectUrl()).toBe('/dashboard');
+          
+          // Check for token cookie with 1h expiration
+          const cookies = res._getHeaders()['set-cookie'];
+          expect(cookies).toBeDefined();
+          expect(cookies.some(cookie =>
+            cookie.includes('token=') && cookie.includes('Max-Age=3600')
+          )).toBe(true);
     });
 
-    it('should return 401 on login failure', async () => {
+    it('should set token cookie with 7d expiration when rememberMe is checked', async () => {
+        const req = httpMocks.createRequest({
+            method: 'POST',
+            url: '/api/auth/login',
+            body: {
+              email: 'test@example.com',
+              password: 'password123',
+              rememberMe: 'on'
+            },
+          });
+          const res = httpMocks.createResponse();
+          const user = { id: 1, email: 'test@example.com' };
+
+          authService.login.mockResolvedValue(user);
+
+          await authController.login(req, res);
+
+          // Check for token cookie with 7d expiration (604800 seconds)
+          const cookies = res._getHeaders()['set-cookie'];
+          expect(cookies).toBeDefined();
+          expect(cookies.some(cookie =>
+            cookie.includes('token=') && cookie.includes('Max-Age=604800')
+          )).toBe(true);
+    });
+
+    it('should return 401 and render login with error on failure', async () => {
         const req = httpMocks.createRequest({
             method: 'POST',
             url: '/api/auth/login',
@@ -96,9 +125,10 @@ describe('Auth Controller', () => {
           await authController.login(req, res);
 
           expect(res.statusCode).toBe(401);
-          expect(res._getJSONData()).toEqual({
-            message: 'Invalid credentials.',
-            error: 'Invalid credentials'
+          expect(res._getRenderView()).toBe('login');
+          expect(res._getRenderData()).toEqual({
+            error: 'Invalid credentials',
+            email: 'test@example.com'
           });
     });
   });

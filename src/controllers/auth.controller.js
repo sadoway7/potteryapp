@@ -46,7 +46,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
     
     // Validate required fields
     if (!email || !password) {
@@ -56,13 +56,23 @@ const login = async (req, res) => {
       });
     }
     
-    const { token, userId } = await authService.login(email, password);
+    const user = await authService.login(email, password);
     
-    // Set JWT as HTTP-only cookie
-    res.cookie('jwt', token, {
+    // Determine token expiration based on "Remember me" selection
+    const tokenExpiration = rememberMe === 'on' ? '7d' : '24h';
+    const maxAge = rememberMe === 'on' ? 7 * 24 * 60 * 60 * 1000 : 86400000; // 7 days or 24 hours
+    
+    // Generate JWT token
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET || 'placeholder-secret', {
+      expiresIn: tokenExpiration
+    });
+    
+    // Set JWT as HTTP-only cookie named 'token'
+    res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 3600000 // 1 hour
+      maxAge: maxAge,
+      sameSite: 'strict'
     });
     
     res.redirect('/dashboard');

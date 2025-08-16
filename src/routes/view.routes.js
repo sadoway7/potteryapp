@@ -16,11 +16,11 @@ router.get('/register', (req, res) => {
   res.render('register', { title: 'Register' });
 });
 
-const authMiddleware = require('../middleware/auth.middleware');
+const verifyToken = require('../middleware/auth.middleware');
 const marketController = require('../controllers/market.controller');
 
 // Dashboard page (Protected)
-router.get('/dashboard', authMiddleware, async (req, res) => {
+router.get('/dashboard', verifyToken, async (req, res) => {
   try {
     const trackedMarketService = require('../services/trackedMarket.service');
     const markets = await trackedMarketService.getAllForUser(req.user.id);
@@ -46,7 +46,7 @@ router.get('/discover', async (req, res) => {
 });
 
 // Single market page
-router.get('/dashboard/market/:trackedMarketId', authMiddleware, async (req, res) => {
+router.get('/dashboard/market/:trackedMarketId', verifyToken, async (req, res) => {
   try {
     const { trackedMarketId } = req.params;
     const userId = req.user.id;

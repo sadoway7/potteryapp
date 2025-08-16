@@ -1,39 +1,91 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+
 let pool;
 let mockQuery = () => Promise.resolve({ rows: [] });
 
-// In a test or dev environment without a DB, use a mock pool
-if (process.env.NODE_ENV === 'test' || !process.env.DB_DATABASE) {
-    pool = {
-        query: mockQuery,
-        connect: () => ({ release: () => {} }),
-        end: () => {}
-    };
-    console.log("Using mock database pool.");
-} else {
-    pool = new Pool({
-        user: process.env.DB_USER,
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        password: process.env.DB_PASSWORD,
-        port: process.env.DB_PORT,
+const createPoolWithRetry = async (config, retries = 0) => {
+  try {
+    const pool = new Pool({
+      ...config,
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 30000,
+      max: 20,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
-}
+    
+    // Test connection immediately
+    await pool.query('SELECT NOW()');
+    return pool;
+  } catch (err) {
+    if (retries < MAX_RETRIES) {
+      const delay = INITIAL_RETRY_DELAY * Math.pow(2, retries);
+      console.log(`Connection failed, retrying in ${delay}ms... (Attempt ${retries + 1}/${MAX_RETRIES})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return createPoolWithRetry(config, retries + 1);
+    }
+    throw new Error(`Failed to connect to database after ${MAX_RETRIES} attempts: ${err.message}`);
+  }
+};
+
+// Initialize the pool
+const initializePool = async () => {
+  if (process.env.NODE_ENV === 'test' || !process.env.DB_DATABASE || process.platform === 'win32') {
+    return {
+      query: mockQuery,
+      connect: () => ({ release: () => {} }),
+      end: () => {}
+    };
+  }
+  return createPoolWithRetry({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_DATABASE,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+  });
+};
+
+// Immediately invoked async function to initialize pool
+(async () => {
+  try {
+    pool = await initializePool();
+    if (process.env.NODE_ENV !== 'test' && process.env.DB_DATABASE) {
+      console.log('Database pool initialized successfully');
+    }
+  } catch (err) {
+    console.error('Failed to initialize database pool:', err);
+    process.exit(1);
+  }
+})();
 
 
 const testDbConnection = async () => {
+  if (!pool) {
+    console.log('Database pool not initialized yet');
+    return false;
+  }
+
   try {
-    await pool.query('SELECT NOW()');
-    console.log('Database connection successful.');
+    const result = await pool.query('SELECT NOW()');
+    console.log('Database connection successful. Current server time:', result.rows[0].now);
+    return true;
   } catch (err) {
-    console.error('Database connection failed.', err.stack);
+    console.error('Database connection failed:', err.message);
+    return false;
   }
 };
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
   testDbConnection,
-  pool, // Export pool for more complex transactions if needed
+  pool,
+  getConnectionStats: () => ({
+    totalCount: pool.totalCount,
+    idleCount: pool.idleCount,
+    waitingCount: pool.waitingCount
+  })
 };

@@ -44,6 +44,50 @@ A typical request-response cycle follows this pattern:
 
 This structured approach ensures that the application is robust, scalable, and easy for any developer to understand.
 
+## Authentication Flow
+```mermaid
+graph TD
+    A[User submits credentials] --> B[Auth Controller]
+    B --> C[Auth Service]
+    C --> D[Verify credentials]
+    D -->|Valid| E[Generate JWT]
+    E --> F[Set HTTP-only cookie]
+    F --> G[Redirect to dashboard]
+    D -->|Invalid| H[Return error]
+```
+
+## Core API Endpoints
+| Endpoint | Method | Description | Authentication |
+|----------|--------|-------------|----------------|
+| `/api/auth/register` | POST | Register new user | None |
+| `/api/auth/login` | POST | Authenticate user | None |
+| `/api/auth/logout` | POST | Invalidate session | Required |
+| `/api/markets` | POST | Create new market | Required |
+| `/api/markets` | GET | List markets | None |
+| `/api/markets/:id` | GET | Get market details | None |
+| `/api/markets/:id/track` | POST | Track market | Required |
+| `/api/markets/:id/track` | DELETE | Untrack market | Required |
+| `/api/markets/tracked/all` | GET | Get user's tracked markets | Required |
+| `/api/markets/tracked/:trackedMarketId` | PUT | Update tracked market status | Required |
+
+## Error Handling Strategy
+- **Validation Errors:** Return 400 with specific field errors
+- **Authentication Errors:** Return 401 with error message
+- **Authorization Errors:** Return 403 with generic message
+- **Database Errors:** Return 500 with generic message
+- **404 Not Found:** Return consistent JSON structure
+
+## API Versioning Strategy
+- **Approach:** URI versioning (e.g., `/api/v1/markets`)
+- **Current Version:** v1
+- **Deprecation Policy:**
+  - Old versions supported for 6 months after new release
+  - Deprecated versions return 410 Gone with migration guide
+- **Version Migration:**
+  - Maintain backward compatibility for 3 months
+  - Provide migration scripts for breaking changes
+  - Document changes in `/docs/api-changes.md`
+
 ## Database Schema
 
 The database is the backbone of the application. The schema is designed to be relational and expandable.
