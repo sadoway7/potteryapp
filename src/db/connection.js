@@ -14,37 +14,7 @@ const createPoolWithRetry = async (config, retries = 0) => {
       password: '*****' // Don't log actual password
     });
     
-    // First try connecting to default postgres database
-    const testPool = new Pool({
-      user: config.user,
-      host: config.host,
-      database: 'postgres',
-      password: config.password,
-      port: parseInt(config.port),
-      connectionTimeoutMillis: 5000
-    });
-
-    try {
-      // Check if our database exists
-      const dbCheck = await testPool.query(
-        `SELECT 1 FROM pg_database WHERE datname = '${config.database}'`
-      );
-      if (dbCheck.rows.length === 0) {
-        throw new Error(`Database ${config.database} does not exist`);
-      }
-      
-      // Check if user has permissions
-      const permCheck = await testPool.query(
-        `SELECT 1 FROM pg_roles WHERE rolname = '${config.user}'`
-      );
-      if (permCheck.rows.length === 0) {
-        throw new Error(`User ${config.user} does not exist`);
-      }
-    } finally {
-      await testPool.end();
-    }
-
-    // Now connect to our actual database
+    // Connect directly to our target database
     const pool = new Pool({
       user: config.user,
       host: config.host,
@@ -79,7 +49,7 @@ const createPoolWithRetry = async (config, retries = 0) => {
 
 // Initialize the pool
 const initializePool = async () => {
-  if (process.env.NODE_ENV === 'test' || !process.env.DB_DATABASE || process.platform === 'win32') {
+  if (process.env.NODE_ENV === 'test' || !process.env.DB_DATABASE) {
     return {
       query: mockQuery,
       connect: () => ({ release: () => {} }),
