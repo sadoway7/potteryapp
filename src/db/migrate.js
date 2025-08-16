@@ -1,9 +1,19 @@
 const fs = require('fs');
 const path = require('path');
-const { pool } = require('./connection'); // We use the pool to run the query
+const { pool } = require('./connection');
 
 const runMigration = async () => {
   console.log('Starting database migration...');
+  
+  // Wait for pool to initialize
+  await new Promise(resolve => {
+    const checkPool = () => {
+      if (pool) return resolve();
+      setTimeout(checkPool, 100);
+    };
+    checkPool();
+  });
+
   const client = await pool.connect();
   try {
     const sql = fs.readFileSync(path.join(__dirname, 'init.sql'), 'utf8');
@@ -13,7 +23,7 @@ const runMigration = async () => {
     console.error('Error during database migration:', err);
   } finally {
     client.release();
-    pool.end(); // End the pool so the script exits
+    pool.end();
   }
 };
 
