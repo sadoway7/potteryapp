@@ -14,12 +14,18 @@ const createPoolWithRetry = async (config, retries = 0) => {
       password: '*****' // Don't log actual password
     });
     const pool = new Pool({
-      ...config,
+      user: config.user,
+      host: config.host,
+      database: config.database,
+      password: config.password,
+      port: parseInt(config.port), // Ensure port is number
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
       max: 20,
-      ssl: false // Temporarily disable SSL for testing
+      ssl: false,
+      application_name: 'potteryapp'
     });
+    console.log('Pool created, testing connection...');
     
     // Test connection immediately
     await pool.query('SELECT NOW()');
