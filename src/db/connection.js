@@ -52,13 +52,27 @@ const initializePool = async () => {
 // Immediately invoked async function to initialize pool
 (async () => {
   try {
+    console.log('Initializing database pool...');
     pool = await initializePool();
     if (process.env.NODE_ENV !== 'test' && process.env.DB_DATABASE) {
-      console.log('Database pool initialized successfully');
+      console.log('✅ Database pool initialized successfully');
+      // Test connection immediately
+      const isConnected = await testDbConnection();
+      if (!isConnected) {
+        throw new Error('Initial connection test failed');
+      }
     }
   } catch (err) {
-    console.error('Failed to initialize database pool:', err);
-    process.exit(1);
+    console.error('❌ Failed to initialize database pool:', err.message);
+    console.log('Retrying in 5 seconds...');
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    try {
+      pool = await initializePool();
+      console.log('✅ Database pool initialized after retry');
+    } catch (retryErr) {
+      console.error('❌ Failed after retry:', retryErr.message);
+      process.exit(1);
+    }
   }
 })();
 
