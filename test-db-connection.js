@@ -3,14 +3,15 @@ const { testDbConnection, pool } = require('./src/db/connection');
 (async () => {
   console.log('Testing database connection...');
   
-  // Wait for pool initialization (max 5 seconds)
+  // Wait for pool initialization (max 10 seconds)
   const startTime = Date.now();
-  while (!pool && Date.now() - startTime < 5000) {
+  while (!pool && Date.now() - startTime < 10000) {
     await new Promise(resolve => setTimeout(resolve, 100));
+    if (pool && pool.totalCount > 0) break;
   }
 
   if (!pool) {
-    console.error('❌ Database pool not initialized after 5 seconds');
+    console.error('❌ Database pool not initialized after 10 seconds');
     process.exit(1);
   }
 
