@@ -63,7 +63,7 @@ const login = async (req, res) => {
     const maxAge = rememberMe === 'on' ? 7 * 24 * 60 * 60 * 1000 : 86400000; // 7 days or 24 hours
     
     // Generate JWT token
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET || 'placeholder-secret', {
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
       expiresIn: tokenExpiration
     });
     
@@ -84,7 +84,13 @@ const login = async (req, res) => {
   }
 };
 
+const logout = (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/login');
+};
+
 module.exports = {
   register,
   login,
+  logout,
 };

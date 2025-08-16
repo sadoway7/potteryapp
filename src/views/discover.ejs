@@ -1,8 +1,33 @@
 <h2>Discover Markets</h2>
-<div class="search-bar">
-    <input type="search" placeholder="Search by name, city, or zip code...">
-    <button class="btn-primary">Search</button>
-</div>
+<form action="/markets" method="GET" class="search-filters">
+    <div class="search-bar">
+        <input type="search"
+               name="search"
+               placeholder="Search by name, city, or zip code..."
+               value="<%= searchTerm || '' %>">
+        <button type="submit" class="btn-primary">Search</button>
+    </div>
+
+    <div class="filter-options">
+        <select name="city" class="filter-select">
+            <option value="">All Cities</option>
+            <% cities.forEach(city => { %>
+                <option value="<%= city %>" <%= selectedCity === city ? 'selected' : '' %>>
+                    <%= city %>
+                </option>
+            <% }) %>
+        </select>
+
+        <select name="zip" class="filter-select">
+            <option value="">All Zip Codes</option>
+            <% zips.forEach(zip => { %>
+                <option value="<%= zip %>" <%= selectedZip === zip ? 'selected' : '' %>>
+                    <%= zip %>
+                </option>
+            <% }) %>
+        </select>
+    </div>
+</form>
 
 <div class="market-list">
     <% if (markets && markets.length) { %>

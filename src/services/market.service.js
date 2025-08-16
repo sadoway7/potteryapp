@@ -1,8 +1,39 @@
 const db = require('../db/connection');
 
-const getAll = async (queryParams) => {
-  // Basic query, can be expanded with search/filter later
-  const result = await db.query('SELECT * FROM markets ORDER BY created_at DESC');
+const getAll = async (queryParams = {}) => {
+  let query = 'SELECT * FROM markets';
+  const values = [];
+  const conditions = [];
+
+  // Handle search term
+  if (queryParams.search) {
+    conditions.push(`(
+      LOWER(name) LIKE LOWER($${values.length + 1}) OR
+      LOWER(address) LIKE LOWER($${values.length + 1})
+    `);
+    values.push(`%${queryParams.search}%`);
+  }
+
+  // Handle zip code filter
+  if (queryParams.zip) {
+    conditions.push(`address LIKE $${values.length + 1}`);
+    values.push(`%${queryParams.zip}%`);
+  }
+
+  // Handle city filter
+  if (queryParams.city) {
+    conditions.push(`LOWER(address) LIKE LOWER($${values.length + 1})`);
+    values.push(`%${queryParams.city}%`);
+  }
+
+  // Combine conditions
+  if (conditions.length) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  query += ' ORDER BY created_at DESC';
+
+  const result = await db.query(query, values);
   return result.rows;
 };
 

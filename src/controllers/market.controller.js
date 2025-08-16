@@ -3,7 +3,25 @@ const marketService = require('../services/market.service');
 const getAllMarkets = async (req, res) => {
   try {
     const markets = await marketService.getAll(req.query);
-    res.json(markets);
+    
+    // For HTML responses, render with filter data
+    if (req.accepts('html')) {
+      // Get unique cities and zips for filters
+      const cities = [...new Set(markets.map(m => m.city).filter(Boolean))];
+      const zips = [...new Set(markets.map(m => m.zip).filter(Boolean))];
+      
+      res.render('discover', {
+        markets,
+        searchTerm: req.query.search || '',
+        selectedCity: req.query.city || '',
+        selectedZip: req.query.zip || '',
+        cities,
+        zips
+      });
+    } else {
+      // For API responses, return JSON
+      res.json(markets);
+    }
   } catch (error) {
     res.status(500).json({ message: 'Error fetching markets', error: error.message });
   }

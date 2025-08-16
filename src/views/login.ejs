@@ -39,6 +39,15 @@
         <p>Don't have an account? <a href="/register">Register here</a>.</p>
     </div>
         <script>
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePassword(password) {
+            return password.length >= 8 && /[!@#$%^&*]/.test(password);
+        }
+
         function validateLoginForm() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -53,7 +62,7 @@
             if (!email) {
                 emailError.textContent = 'Email is required';
                 isValid = false;
-            } else if (!/\S+@\S+\.\S+/.test(email)) {
+            } else if (!validateEmail(email)) {
                 emailError.textContent = 'Please enter a valid email address';
                 isValid = false;
             }
@@ -61,13 +70,40 @@
             if (!password) {
                 passwordError.textContent = 'Password is required';
                 isValid = false;
-            } else if (password.length < 6) {
-                passwordError.textContent = 'Password must be at least 6 characters';
+            } else if (!validatePassword(password)) {
+                passwordError.textContent = 'Password must be at least 8 characters with one special character';
                 isValid = false;
             }
             
             return isValid;
         }
+
+        // Add real-time validation
+        document.getElementById('email').addEventListener('input', function() {
+            const email = this.value;
+            const emailError = document.getElementById('email-error');
+            
+            if (!email) {
+                emailError.textContent = '';
+            } else if (!validateEmail(email)) {
+                emailError.textContent = 'Please enter a valid email address';
+            } else {
+                emailError.textContent = '';
+            }
+        });
+
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const passwordError = document.getElementById('password-error');
+            
+            if (!password) {
+                passwordError.textContent = '';
+            } else if (!validatePassword(password)) {
+                passwordError.textContent = 'Password must be at least 8 characters with one special character';
+            } else {
+                passwordError.textContent = '';
+            }
+        });
         </script>
     </body>
 </html>

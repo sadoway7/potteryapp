@@ -21,6 +21,8 @@ router.post('/register', authController.register);
 
 // POST /api/auth/login - User login
 router.post('/login', authController.login);
+// GET /logout - User logout
+router.get('/logout', authController.logout);
 
 // Example route to test
 router.get('/test', (req, res) => {

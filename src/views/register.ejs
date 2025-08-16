@@ -24,22 +24,40 @@
 <p>Already have an account? <a href="/login">Login here</a>.</p>
 
 <script>
-function validatePasswords() {
+function validateForm() {
+    const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirm-password').value;
+    const emailError = document.getElementById('email-error');
     const passwordError = document.getElementById('password-error');
     const confirmError = document.getElementById('confirm-error');
     
+    // Clear previous errors
+    emailError.textContent = '';
     passwordError.textContent = '';
     confirmError.textContent = '';
     
     let isValid = true;
     
-    if (password.length < 8) {
-        passwordError.textContent = 'Password must be at least 8 characters';
+    // Email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        emailError.textContent = 'Please enter a valid email address';
         isValid = false;
     }
     
+    // Password strength validation
+    if (password.length < 8) {
+        passwordError.textContent = 'Password must be at least 8 characters';
+        isValid = false;
+    } else if (!/[A-Z]/.test(password)) {
+        passwordError.textContent = 'Password must contain at least one uppercase letter';
+        isValid = false;
+    } else if (!/[0-9]/.test(password)) {
+        passwordError.textContent = 'Password must contain at least one number';
+        isValid = false;
+    }
+    
+    // Password match validation
     if (password !== confirmPassword) {
         confirmError.textContent = 'Passwords do not match';
         isValid = false;
@@ -47,4 +65,9 @@ function validatePasswords() {
     
     return isValid;
 }
+
+// Add real-time validation
+document.getElementById('email').addEventListener('blur', validateForm);
+document.getElementById('password').addEventListener('input', validateForm);
+document.getElementById('confirm-password').addEventListener('input', validateForm);
 </script>

@@ -15,21 +15,66 @@
             <button type="submit" class="btn-primary">Update Status</button>
         </form>
 
+        <script>
+        function validateEventForm() {
+            const date = document.getElementById('event_date').value;
+            const sales = document.getElementById('sales_total').value;
+            const costs = document.getElementById('costs_total').value;
+            
+            const dateError = document.getElementById('date-error');
+            const salesError = document.getElementById('sales-error');
+            const costsError = document.getElementById('costs-error');
+            
+            dateError.textContent = '';
+            salesError.textContent = '';
+            costsError.textContent = '';
+            
+            let isValid = true;
+            
+            if (!date) {
+                dateError.textContent = 'Date is required';
+                isValid = false;
+            } else {
+                const today = new Date();
+                const selectedDate = new Date(date);
+                if (selectedDate > today) {
+                    dateError.textContent = 'Date cannot be in the future';
+                    isValid = false;
+                }
+            }
+            
+            if (sales && parseFloat(sales) < 0) {
+                salesError.textContent = 'Sales must be positive';
+                isValid = false;
+            }
+            
+            if (costs && parseFloat(costs) < 0) {
+                costsError.textContent = 'Costs must be positive';
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        </script>
+
         <hr>
 
         <h3>Log an Event Day</h3>
-        <form action="/api/markets/tracked/<%= market.tracked_market_id %>/events" method="POST" class="form-stacked">
+        <form action="/api/markets/tracked/<%= market.tracked_market_id %>/events" method="POST" class="form-stacked" onsubmit="return validateEventForm()">
             <div class="form-group">
                 <label for="event_date">Date</label>
-                <input type="date" name="event_date" required>
+                <input type="date" name="event_date" id="event_date" required>
+                <p id="date-error" class="error-message"></p>
             </div>
             <div class="form-group">
                 <label for="sales_total">Sales ($)</label>
-                <input type="number" name="sales_total" step="0.01" placeholder="150.50">
+                <input type="number" name="sales_total" id="sales_total" step="0.01" placeholder="150.50" min="0">
+                <p id="sales-error" class="error-message"></p>
             </div>
             <div class="form-group">
                 <label for="costs_total">Costs ($)</label>
-                <input type="number" name="costs_total" step="0.01" placeholder="25.00">
+                <input type="number" name="costs_total" id="costs_total" step="0.01" placeholder="25.00" min="0">
+                <p id="costs-error" class="error-message"></p>
             </div>
             <div class="form-group">
                 <label for="private_notes">Private Notes</label>
