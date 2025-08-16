@@ -36,13 +36,26 @@ app.use('/api', apiRoutes);
 const viewRoutes = require('./routes/view.routes');
 app.use('/', viewRoutes);
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err.stack);
+  res.status(500).render('error', {
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err : {}
+  });
+});
+
 // --- Server Initialization ---
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
-  // Test the database connection on startup - DISABLED until deployment
-  // testDbConnection();
+  try {
+    await testDbConnection();
+    console.log('✅ Database connection verified');
+  } catch (err) {
+    console.error('❌ Database connection failed:', err.message);
+  }
 });
 
 module.exports = app;
