@@ -18,7 +18,7 @@ const createPoolWithRetry = async (config, retries = 0) => {
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
       max: 20,
-      ssl: { rejectUnauthorized: false } // Force SSL for NameCheap
+      ssl: false // Temporarily disable SSL for testing
     });
     
     // Test connection immediately
