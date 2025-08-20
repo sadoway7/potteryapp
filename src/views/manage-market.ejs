@@ -1,9 +1,11 @@
+<%- contentFor('body') %>
 <h2>Manage: <%= market.name %></h2>
 
 <div class="manage-market-layout">
     <div class="main-panel">
         <h3>Update Status</h3>
         <form action="/api/markets/tracked/<%= market.tracked_market_id %>" method="POST" class="form-inline">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="_method" value="PUT"> <!-- Method override for PUT -->
             <select name="status">
                 <option value="Interested" <%= market.status === 'Interested' ? 'selected' : '' %>>Interested</option>
@@ -61,6 +63,7 @@
 
         <h3>Log an Event Day</h3>
         <form action="/api/markets/tracked/<%= market.tracked_market_id %>/events" method="POST" class="form-stacked" onsubmit="return validateEventForm()">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-group">
                 <label for="event_date">Date</label>
                 <input type="date" name="event_date" id="event_date" required>
@@ -94,3 +97,4 @@
 <style>
     .form-inline { display: flex; align-items: center; gap: 1rem; }
 </style>
+<%- endContent() %>

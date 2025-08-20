@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const trackedMarketService = require('../services/trackedMarket.service');
+const marketService = require('../services/market.service');
 
 // Home page
 router.get('/', (req, res) => {
@@ -22,7 +24,6 @@ const marketController = require('../controllers/market.controller');
 // Dashboard page (Protected)
 router.get('/dashboard', verifyToken, async (req, res) => {
   try {
-    const trackedMarketService = require('../services/trackedMarket.service');
     const markets = await trackedMarketService.getAllForUser(req.user.id);
     res.render('dashboard', { title: 'My Dashboard', markets });
   } catch (error) {
@@ -33,11 +34,6 @@ router.get('/dashboard', verifyToken, async (req, res) => {
 // Discover markets page
 router.get('/discover', async (req, res) => {
   try {
-    // We'll call the controller method which in turn calls the service
-    // For simplicity in rendering, we can also call the service directly here
-    // But let's stick to the controller pattern. We need to mock the req/res for the controller.
-    // A simpler way for server-side rendering is to call the service directly. Let's do that.
-    const marketService = require('../services/market.service');
     const markets = await marketService.getAll();
     res.render('discover', { title: 'Discover Markets', markets: markets });
   } catch (error) {
@@ -50,7 +46,6 @@ router.get('/dashboard/market/:trackedMarketId', verifyToken, async (req, res) =
   try {
     const { trackedMarketId } = req.params;
     const userId = req.user.id;
-    const trackedMarketService = require('../services/trackedMarket.service');
     const market = await trackedMarketService.getTrackedMarketById(userId, trackedMarketId);
     if (!market) {
       return res.status(404).send('Tracked market not found or you do not have permission to view it.');
@@ -63,7 +58,6 @@ router.get('/dashboard/market/:trackedMarketId', verifyToken, async (req, res) =
 
 router.get('/market/:id', async (req, res) => {
   try {
-    const marketService = require('../services/market.service');
     const market = await marketService.getById(req.params.id);
     if (!market) {
       return res.status(404).send('Market not found');
@@ -72,6 +66,11 @@ router.get('/market/:id', async (req, res) => {
   } catch (error) {
     res.status(500).send('Error fetching market');
   }
+});
+
+// Create new market page (Protected)
+router.get('/markets/new', verifyToken, (req, res) => {
+  res.render('market-form', { title: 'Create New Market', market: null, editing: false });
 });
 
 module.exports = router;

@@ -1,0 +1,15 @@
+<header>
+    <nav>
+        <h1><a href="/">Rumfor Market Tracker</a></h1>
+        <ul>
+            <% if (user) { %>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/discover">Discover</a></li>
+                <li><a href="/api/auth/logout">Logout</a></li>
+            <% } else { %>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/register">Register</a></li>
+            <% } %>
+        </ul>
+    </nav>
+</header>

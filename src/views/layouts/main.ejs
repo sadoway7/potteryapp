@@ -3,29 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> - Rumfor Market Tracker</title>
+    <title><%= title || 'Rumfor Market Tracker' %></title>
     <link rel="stylesheet" href="/css/style.css">
+    <%- block('head') %>
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="/"><h1>Rumfor Market Tracker</h1></a>
-            <ul>
-                <li><a href="/discover">Discover Markets</a></li>
-                <li><a href="/login">Login</a></li>
-                <li><a href="/register">Register</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
+    <%- include('header') %>
+    
+    <main class="container">
         <%- body %>
     </main>
-
-    <footer>
-        <p>&copy; 2025 Rumfor.com. All rights reserved.</p>
-    </footer>
-
+    
+    <%- include('footer') %>
+    
     <script src="/js/main.js"></script>
+    <%- block('scripts') %>
 </body>
 </html>

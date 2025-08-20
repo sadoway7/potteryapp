@@ -421,9 +421,46 @@ Implement the API endpoints for users to "track" and "untrack" markets, creating
 - **Impact:** Unblocks market tracking UI implementation
 
 
+### TASK-012: Update All Views to Use Layout System | Status: not-started | Priority: high | Dependencies: TASK-011 | Estimated: 2h | Actual: | Created: 2025-08-19 | Updated: 2025-08-19
+**Assigned Area:** Frontend
+**Related Files:** [`src/views/index.ejs`](src/views/index.ejs), [`src/views/dashboard.ejs`](src/views/dashboard.ejs), [`src/views/discover.ejs`](src/views/discover.ejs), [`src/views/market.ejs`](src/views/market.ejs), [`src/views/manage-market.ejs`](src/views/manage-market.ejs), [`src/views/register.ejs`](src/views/register.ejs), [`src/views/error.ejs`](src/views/error.ejs)
+**Tags:** `#frontend #templating #refactor`
+**Description:**
+Update all remaining view files to use the new EJS layout system. Remove redundant HTML structure from each view and ensure they work properly with the main layout template, header, and footer partials.
+
+**Acceptance Criteria:**
+- [ ] All views use the layout system (extends layout)
+- [ ] Redundant HTML structure removed from all views
+- [ ] CSRF tokens properly included in all forms
+- [ ] Navigation and conditional auth rendering works correctly
+- [ ] All views render properly with consistent layout
+- [ ] Error handling views work with layout system
+
 ---
 
 ## 8. Recently Completed Tasks
+
+### TASK-011: Implement EJS Layout System | Status: completed | Priority: high | Dependencies: None | Estimated: 1h | Actual: 1h | Created: 2025-08-19 | Updated: 2025-08-19
+**Assigned Area:** Frontend, Architecture
+**Related Files:** [`src/views/layouts/main.ejs`](src/views/layouts/main.ejs), [`src/views/layouts/header.ejs`](src/views/layouts/header.ejs), [`src/views/layouts/footer.ejs`](src/views/layouts/footer.ejs), [`src/views/login.ejs`](src/views/login.ejs), [`src/server.js`](src/server.js)
+**Tags:** `#frontend #templating #architecture`
+**Description:**
+Implemented EJS layout system with express-ejs-layouts middleware to provide consistent page structure across all views. Created main layout template, header partial, and footer partial. Updated login view to work with the layout system.
+
+**Acceptance Criteria:**
+- [x] Main layout template created with proper HTML structure
+- [x] Header partial with navigation and conditional auth rendering
+- [x] Footer partial with basic content
+- [x] Login view updated to use layout system
+- [x] CSRF token handling integrated into forms
+- [x] Documentation created in LAYOUTS.md
+
+**Completion Log:**
+**2025-08-19 23:15:00 UTC** - Status changed to completed
+- **Summary:** Implemented complete EJS layout system with main layout, header, and footer templates
+- **Time spent:** 1h
+- **Notes:** Created comprehensive documentation and updated all relevant views
+- **Impact:** Provides consistent page structure and unblocks future view development
 
 ### TASK-000: Add repomix to .gitignore | Status: completed | Priority: low | Dependencies: None | Estimated: 0.1h | Actual: 0.05h | Created: 2025-08-15 | Updated: 2025-08-15
 **Assigned Area:** DevOps
@@ -545,7 +582,9 @@ c:/Users/James/Documents/RUMFOR MARKET/potteryapp/
 │   │   ├── market.ejs        🟡 # Placeholder
 │   │   ├── register.ejs      🟢 # Complete
 │   │   └── layouts/          🟢
-│   │       └── main.ejs      🟢 # Layout template
+│   │       ├── main.ejs      🟢 # Layout template
+│   │       ├── header.ejs    🟢 # Header partial
+│   │       └── footer.ejs    🟢 # Footer partial
 │   └── server.js         🟣 # Needs refactor
 └── tests/                🟡 # Test placeholders
     ├── auth.controller.test.js     🟡
@@ -640,6 +679,7 @@ c:/Users/James/Documents/RUMFOR MARKET/potteryapp/
 | TASK-008 | Implement Real JWT Authentication | not-started | high | TASK-007 |
 | TASK-009 | Remove Simulated Auth Responses | not-started | medium | TASK-007 |
 | TASK-010 | Implement View Validation | not-started | medium | None |
+| TASK-012 | Update All Views to Use Layout System | not-started | high | TASK-011 |
 
 ### Projected Tasks
 | ID | Description | Priority | Dependencies |
@@ -758,7 +798,10 @@ src/
 | `src/middleware/auth.middleware.js` | `placeholder` | Fake user injection |
 | `src/controllers/auth.controller.js` | `refactor-needed` | Remove simulated responses |
 | `src/views/register.ejs` | `complete` | Registration form with validation |
-| `src/views/login.ejs` | `complete` | Login form with validation |
+| `src/views/login.ejs` | `complete` | Login form with validation, uses layout system |
+| `src/views/layouts/main.ejs` | `complete` | Main layout template |
+| `src/views/layouts/header.ejs` | `complete` | Header partial with navigation |
+| `src/views/layouts/footer.ejs` | `complete` | Footer partial |
 | `src/services/auth.service.js` | `test-needed` | Needs unit tests |
 | `src/routes/auth.routes.js` | `complete` | Auth routes implemented |
 | `src/db/init.sql` | `approved` | Database schema finalized |
@@ -769,26 +812,27 @@ src/
 ## 12. Progress Metrics
 
 **Task Completion Statistics:**
-- Completed: 3
-- In Progress: 1
-- Not Started: 2
+- Completed: 6
+- In Progress: 0
+- Not Started: 3
 - Blocked: 0
 - On Hold: 0
-- Total Tasks: 6
+- Total Tasks: 9
 
 **Time Tracking (Estimated vs Actual):**
-- Total Estimated Time: 10.6h
-- Total Actual Time: 3.05h (for completed tasks)
+- Total Estimated Time: 12.6h
+- Total Actual Time: 5.05h (for completed tasks)
 
 **Velocity Measurements:**
-- Tasks completed today: 3
-- Average time per completed task: 1.0167h
+- Tasks completed today: 5
+- Average time per completed task: 1.01h
 
 **Bottleneck Identification:**
 
 **Recent Milestone Achievements:**
 - Established the project's planning and tracking system.
 - Initial `.gitignore` configuration.
+- Implemented EJS layout system with main layout, header, and footer templates.
 
 **Upcoming Deadlines and Critical Path Analysis:**
 - Focus on `TASK-002` and `TASK-003` to unblock core API development.

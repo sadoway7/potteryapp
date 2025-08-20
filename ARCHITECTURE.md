@@ -26,6 +26,8 @@ The project is structured to separate concerns into different directories.
     -   `/services`: Contains the core business logic of the application. Services are called by controllers and are responsible for orchestrating data from models to perform specific tasks. **All database queries should be initiated from this layer.**
     -   `/utils`: Holds utility functions that can be reused across the application (e.g., date formatters, password hashing).
     -   `/views`: Contains the EJS template files used for server-side rendering of the UI.
+        -   `/layouts`: Layout templates for consistent page structure
+        -   Individual view files that extend layouts
 
 -   **/tests**: Contains all the test files for the application.
 

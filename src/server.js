@@ -4,6 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const cookieParser = require('cookie-parser');
+const csrf = require('csurf');
+const helmet = require('helmet');
 
 // Import database connection test
 const { testDbConnection } = require('./db/connection');
@@ -17,6 +20,18 @@ app.use(cors());
 app.use(express.json());
 // Parse URL-encoded bodies
 app.use(express.urlencoded({ extended: true }));
+// Cookie parser middleware
+app.use(cookieParser());
+// CSRF protection
+app.use(csrf({ cookie: true }));
+// Security headers
+app.use(helmet());
+
+// CSRF token middleware - pass CSRF token to all views
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 
 const expressLayouts = require('express-ejs-layouts');
 
@@ -36,8 +51,8 @@ app.use('/api', apiRoutes);
 const viewRoutes = require('./routes/view.routes');
 // Demo routes
 const demoRoutes = require('./routes/demo.routes');
-app.use('/', demoRoutes);
 app.use('/', viewRoutes);
+app.use('/', demoRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -45,6 +60,14 @@ app.use((err, req, res, next) => {
   res.status(500).render('error', {
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err : {}
+  });
+});
+
+// 404 handler - catch all undefined routes
+app.use((req, res) => {
+  res.status(404).render('error', {
+    message: 'Page not found',
+    error: {}
   });
 });
 

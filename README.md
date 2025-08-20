@@ -23,11 +23,14 @@ Rumfor Market Tracker provides:
 - Market tracking with custom statuses
 - Date-specific message boards
 - Expense tracking per market event
+- EJS templating with layout inheritance
+- Responsive mobile-first design
 
 ## Documentation
 - [PLANNING.md](PLANNING.md) - Task management and progress tracking
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Technical architecture and design
 - [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment instructions
+- [LAYOUTS.md](LAYOUTS.md) - EJS layout system documentation
 
 ## Development Setup
 1. Clone the repository
@@ -35,6 +38,13 @@ Rumfor Market Tracker provides:
 3. Create `.env` file with database credentials
 4. Run `npm run db:migrate`
 5. Start dev server with `npm run dev`
+
+## View Architecture
+The application uses EJS templating with express-ejs-layouts for consistent page structure:
+- [`src/views/layouts/main.ejs`](src/views/layouts/main.ejs) - Main layout template
+- [`src/views/layouts/header.ejs`](src/views/layouts/header.ejs) - Header partial
+- [`src/views/layouts/footer.ejs`](src/views/layouts/footer.ejs) - Footer partial
+- Individual view files extend the main layout using `<%- body %>` placeholder
 
 ## Workflow
 - Tasks are managed in [PLANNING.md](PLANNING.md)

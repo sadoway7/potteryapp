@@ -1,177 +1,91 @@
-<h2>Welcome to the Market Tracker</h2>
-<p>Your all-in-one solution for managing your market vendor business.</p>
-<div class="cta-buttons">
-    <a href="/discover" class="btn-primary">Find Markets</a>
-    <a href="/register" class="btn-secondary">Get Started</a>
+<%- contentFor('head') %>
+    <meta name="description" content="Rumfor Market Tracker - Your all-in-one solution for managing your market vendor business. Track markets, sales, and analytics in one place.">
+<%- endContent %>
+
+<div class="hero-section">
+    <div class="hero-content">
+        <h1>Welcome to Rumfor Market Tracker</h1>
+        <p class="hero-subtitle">Your all-in-one solution for managing your market vendor business</p>
+        <div class="cta-buttons">
+            <a href="/discover" class="btn btn-primary btn-large">Find Markets</a>
+            <a href="/register" class="btn btn-secondary btn-large">Get Started</a>
+        </div>
+    </div>
 </div>
-<p>This app is a progressive web app that feels native on mobile devices while remaining accessible on desktop for detailed analysis and reporting.</p>
-<p>The main goal is tracking markets - and making a database or markets when where, details. so other users can find those markets - people should be able to add private markets - but adding a market should be public by default and check against existing markets to prevent duplicates.</p>
-<p>Users will be adding a market so they can track their things - they have an option to keep it private - theyre personal details - or things they need to track should always be private - but the market details can be public - so that other users can use that market template - the market template should include details about the market - like email, size. esimated turnout, vendor thumbs up or thumbs down if they like it so the markets can be ranked.</p>
-<h3>Dashboard</h3>
-<p>Today's Markets: Prominent display of current day's markets and key metrics</p>
-<p>Quick Actions: One-tap access to most common tasks</p>
-<p>Alert System: Low stock warnings, upcoming market reminders, payment due dates</p>
-<p>Weather Integration: Weather forecast for market days</p>
-<h3>Market Management</h3>
-<p>Market Profiles: Create detailed profiles for each market (location, fees, hours, special requirements, customer demographics)</p>
-<p>Market Calendar: Visual calendar showing upcoming markets, deadlines, and preparation schedules</p>
-<p>Market Performance History: Track long-term trends and seasonal patterns for each market</p>
-<h3>Sales & Transaction Tracking</h3>
-<p>Quick Sale Entry: Large, thumb-friendly buttons for fast sales logging during busy periods</p>
-<p>Payment Method Tracking: Cash, card, digital payment tracking</p>
-<p>Customer Information: Optional customer details for repeat business and marketing</p>
-<p>Receipt Generation: Digital receipts via email/SMS</p>
-<h3>Financial Management</h3>
-<p>Expense Tracking: Market fees, travel costs, materials, permits</p>
-<p>Revenue Analysis: Sales by market, product, time period</p>
-<p>Profit Calculations: Real profit after all expenses, not just gross sales</p>
-<p>Tax Preparation: Categorized expense and income reports</p>
-<h3>Analytics & Insights</h3>
-<p>Market Performance Comparison: Which markets are most profitable</p>
-<p>Product Performance: Best and worst-selling items by market</p>
-<p>Seasonal Trends: Identify patterns in sales and customer behavior</p>
-<p>ROI Analysis: Time and money invested vs. returns for each market</p>
-<h3>Technical Requirements</h3>
-<p>Mobile-First Design Principles</p>
-<p>Touch-Optimized: Large tap targets, swipe gestures, thumb-friendly navigation</p>
-<p>Offline Capability: Core functions work without internet connection</p>
-<p>Fast Loading: Minimal initial load time, progressive loading of features</p>
-<p>Battery Conscious: Efficient use of device resources</p>
-<h3>User Experience Priorities</h3>
-<p>Speed: Critical actions (logging sales, checking stock) should take <3 seconds</p>
-<p>Simplicity: Reduce cognitive load during busy market operations</p>
-<p>Error Prevention: Validate inputs and provide clear error messages</p>
-<p>Accessibility: High contrast options, large text, voice input capabilities</p>
-<h3>Data Architecture</h3>
-<p>Offline-First: Local data storage with cloud sync when available</p>
-<p>Multi-Device Sync: Access data from phone, tablet, or computer</p>
-<p>Data Export: CSV, PDF reports for accounting and analysis</p>
-<p>Backup & Recovery: Automatic backups with easy restore options</p>
-<h3>Specific UI/UX Considerations</h3>
-<p>Dashboard Design</p>
-<p>Today's Markets: Prominent display of current day's markets and key metrics</p>
-<p>Quick Actions: One-tap access to most common tasks</p>
-<p>Alert System: Low stock warnings, upcoming market reminders, payment due dates</p>
-<p>Weather Integration: Weather forecast for market days</p>
-<h3>Navigation Structure</h3>
-<p>Bottom Tab Navigation: Markets, Sales, Inventory, Analytics, Settings</p>
-<p>Contextual Actions: Floating action buttons for primary tasks in each section</p>
-<p>Search & Filter: Quick access to specific products, markets, or time periods</p>
-<h3>Input Methods</h3>
-<p>Voice Input: For hands-free operation during busy periods</p>
-<p>Barcode Scanning: For products with UPC codes</p>
-<p>Photo Capture: Document receipts, product photos, market setups</p>
-<p>Quick Templates: Pre-filled forms for common transactions</p>
-<h3>Advanced Features to Consider</h3>
-<p>Market Intelligence</p>
-<p>Weather Correlation: Analyze how weather affects sales at outdoor markets</p>
-<p>Event Calendar Integration: Track local events that might impact market traffic</p>
-<p>Competitor Tracking: Note competitor presence and pricing</p>
-<h3>Customer Relationship Management</h3>
-<p>Customer Profiles: Track repeat customers and their purchase history</p>
-<p>Marketing Integration: Email lists, social media promotion planning</p>
-<p>Loyalty Programs: Simple punch card or points tracking</p>
-<h3>Supply Chain Management</h3>
-<p>Supplier Tracking: Manage relationships with ingredient/material suppliers</p>
-<p>Production Planning: Schedule creation of handmade items based on projected demand</p>
-<p>Quality Control: Track product quality issues and their impact on sales</p>
-<h3>Success Metrics to Track</h3>
-<p>User Engagement</p>
-<p>Daily/weekly active users</p>
-<p>Time spent in app during market days</p>
-<p>Feature adoption rates</p>
-<p>User retention over time</p>
-<h3>Business Impact</h3>
-<p>Average increase in vendor profitability</p>
-<p>Time saved on administrative tasks</p>
-<p>Improvement in inventory turnover</p>
-<p>Reduction in unsold product waste</p>
-<h3>Development Approach</h3>
-<p>Phase 1: Core MVP</p>
-<p>Basic market and product management</p>
-<p>Simple sales tracking</p>
-<p>Essential analytics</p>
-<p>Phase 2: Enhanced Operations</p>
-<p>Advanced inventory features</p>
-<p>Comprehensive expense tracking</p>
-<p>Detailed analytics and reporting</p>
-<p>Phase 3: Intelligence & Integration</p>
-<p>Predictive analytics</p>
-<p>Third-party integrations</p>
-<p>Advanced CRM features</p>
-<h3>Key Design Questions to Address</h3>
-<p>How can we make sale entry so fast that vendors won't skip logging transactions during busy periods?</p>
-<p>What's the minimum viable data set needed to provide meaningful insights?</p>
-<p>How do we balance feature richness with app simplicity for users who may not be tech-savvy?</p>
-<p>What offline capabilities are absolutely essential vs. nice-to-have?</p>
-<p>How can we gamify or incentivize consistent data entry?</p>
-<h3>Success Criteria</h3>
-<p>The app should enable vendors to:</p>
-<p>Reduce time spent on administrative tasks by 50%</p>
-<p>Increase average profit margins through better market selection and inventory management</p>
-<p>Make data-driven decisions about market participation</p>
-<p>Spend more time on their craft and customer relationships, less on paperwork</p>
-<p>Build this as a progressive web app that feels native on mobile devices while remaining accessible on desktop for detailed analysis and reporting.</p>
-<p>i will be hosting this webapp on my domain rumfor.com -</p>
-<p>i will be using gitpul ti get updates installed as we make changes</p>
-<p>i will be using namecheap shared hosting - so we need to make sure we are not using resources that require a vm or private docker container</p>
-<p>the markets that end up in the database - will get their own page - we may end up adding more features even down the road too</p>
-<p>anyone can create a new market profile - we need to make the rating system non agressive - we dont want to bomb markets - we just want to know whats going on - some markets are better for different vendors - so maybe trying to have positive up for what the market is good for, instead of negativs</p>
-<p>the market discovery and search sounds about right.</p>
-<p>in the personal market management - they user will be able to click into their markets - and each of their markets will be configurable with variouse things they can track - and get reminds etc - this is almost like a mini app on top - but not seperate - just has be be detailed.</p>
-<p>event logginc and calander yes</p>
-<p>yes to all of it you seem to understand</p>
-<p>i will be hosting this webapp on my domain rumfor.com -</p>
-<p>i will be using gitpul ti get updates installed as we make changes</p>
-<p>i will be using namecheap shared hosting - so we need to make sure we are not using resources that require a vm or private docker container</p>
-<p>we also need to make a good plan md, todo - really think about structure and how this app is factored so we dont need to refactor too much. we will need to make sure we have the neccesary branches and file handlers to make surewe can add new features as need, it needs to be broken up more than we probably thing in the start - lots of files doing little tasks - so that we can keep track. and we also need a master file stucture that gets updated and has notes to requires updates from anyone that sees it. so that we can keep track of what files are doing what and passing teh data around</p>
-<p>and we also need to have a good database that will be expandable - without breaking or getting bogged own - there may be some logical real world example of database templates we can learn from</p>
-<p>when we get this app going - i will be pulling from the github and live testing it - i will do git pulls</p>
-<p>the domain we are going to be ussing is rumfor.com or www.rumfor.com or any regular way of typing the rumfor.com url -</p>
-<p>i also can giv eyou the database details</p>
-<p>xsoucsnq_tracker</p>
-<p>xsoucsnq_trackeruser</p>
-<p>Oswald1986!</p>
-<p>i think we will use postgreSQL</p>
-<p>User: xsoucsnq_rumforuser</p>
-<p>Database: xsoucsnq_rumfor</p>
-<p>password: Oswald1986!</p>
-<p>they will not user it to track inventory - but they can track sales - or costs related to the market like vendor fees -they should be able to decide what they track per market.</p>
-<p>the main goal is tracking markets - and making a database or markets when where, details. so other users can find those markets - people should be able to add private markets - but adding a market should be public by default and check against existing markets to prevent duplicates.</p>
-<p>useres will be adding a market so they can track their things - they have an option to keep it private - theyre personal details - or things they need to track should always be private - but the market details can be public - so that other users can use that market template - the market template should include details about the market - like email, size. esimated turnout, vendor thumbs up or thumbs down if they like it so the markets can be ranked</p>
-<p>there needs to be status for the markets a user adds - like "pending application" "pending approvbal" "pending payment" "approved" - the user will update this as they get more information as they process their work and get their things done and need to update so they know where they are at</p>
-<p>the user should have their own personal calendar. once they have added the market - it will show up in their personal list with the status - they can add or remove it - in that market they can do all their planning privatly. but still be able to add comments to the public market listing</p>
-<p>they can have private notes - but they there can be public notes or message board for the market also -</p>
-<p>duplicates should cross check against multiple atributes to find at least 2 matching stats- so that the user can be warned before they add a duplicate.</p>
-<p>vendor profiles will be fairly minimal on the public side - privatly vendors can see all their info and add friends. but publicly it will just show markets the vendor has attended - this will be when a vendor changes the status of one of there markets to completed.</p>
-<p>markets should always be able to be commented on once made - there should be a tab just to see the markets going on and find ones around you. or different searching, almost like how grindr or the location dating apps work. but we wont use real gps, people can pin on a map where the market is. we dont use map api.</p>
-<p>there should also be a my markets - the ones you have copied. or i guess made if it didnt exist yet.</p>
-<p>but sometimes vendors may want to talk while they are preparing for the market - so each market should havea messabe board -</p>
-<p>the application status - is m ore like the users status with the market - the user can use default status - or type in their own if they want - but there will be some status that are always required - like interested, application sent, approved. and complete - because some of those status may matter how the user shows in the app</p>
-<p>if the user sets the status to approved - they will show on the market as an attending vendor - for example</p>
-<p>the database can be used when deploying - once we get it working i can report things when we push updates - for now we just need to start the projet and get the bassline setup -</p>
-<p>i will be hosting this webapp on my domain rumfor.com -</p>
-<p>i will be using gitpul ti get updates installed as we make changes</p>
-<p>i will be using namecheap shared hosting - so we need to make sure we are not using resources that require a vm or private docker container</p>
-<p>the markets that end up in the database - will get their own page - we may end up adding more features even down the road too</p>
-<p>anyone can create a new market profile - we need to make the rating system non agressive - we dont want to bomb markets - we just want to know whats going on - some markets are better for different vendors - so maybe trying to have positive up for what the market is good for, instead of negativs</p>
-<p>the market discovery and search sounds about right.</p>
-<p>in the personal market management - they user will be able to click into their markets - and each of their markets will be configurable with variouse things they can track - and get reminds etc - this is almost like a mini app on top - but not seperate - just has be be detailed.</p>
-<p>event logginc and calander yes</p>
-<p>yes to all of it you seem to understand</p>
-<p>i will be hosting this webapp on my domain rumfor.com -</p>
-<p>i will be using gitpul ti get updates installed as we make changes</p>
-<p>i will be using namecheap shared hosting - so we need to make sure we are not using resources that require a vm or private docker container</p>
-<p>we also need to make a good plan md, todo - really think about structure and how this app is factored so we dont need to refactor too much. we will need to make sure we have the neccesary branches and file handlers to make surewe can add new features as need, it needs to be broken up more than we probably thing in the start - lots of files doing little tasks - so that we can keep track. and we also need a master file stucture that gets updated and has notes to requires updates from anyone that sees it. so that we can keep track of what files are doing what and passing teh data around</p>
-<p>and we also need to have a good database that will be expandable - without breaking or getting bogged own - there may be some logical real world example of database templates we can learn from</p>
-<p>when we get this app going - i will be pulling from the github and live testing it - i will do git pulls</p>
-<p>the domain we are going to be ussing is rumfor.com or www.rumfor.com or any regular way of typing the rumfor.com url -</p>
-<p>i also can giv eyou the database details</p>
-<p>xsoucsnq_tracker</p>
-<p>xsoucsnq_trackeruser</p>
-<p>Oswald1986!</p>
-<p>i think we will use postgreSQL</p>
-<p>User: xsoucsnq_rumforuser</p>
-<p>Database: xsoucsnq_rumfor</p>
-<p>password: Oswald1986!</p>
-<p>the database can be used when deploying - once we get it working i can report things when we push updates - for now we just need to start the projet and get the bassline setup -</p>
+
+<div class="features-section">
+    <div class="container">
+        <h2>Everything You Need to Succeed</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Market Management</h3>
+                <p>Create detailed profiles for each market, track performance, and manage your calendar all in one place.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>Sales Tracking</h3>
+                <p>Quickly log sales, track payment methods, and generate digital receipts for your customers.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3>Analytics & Insights</h3>
+                <p>Analyze market performance, identify trends, and make data-driven decisions about your business.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>Market Discovery</h3>
+                <p>Find new markets, see vendor ratings, and connect with other vendors in your area.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="how-it-works">
+    <div class="container">
+        <h2>How It Works</h2>
+        <div class="steps">
+            <div class="step">
+                <span class="step-number">1</span>
+                <h3>Add Markets</h3>
+                <p>Create profiles for markets you attend or discover new ones in our database.</p>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                <h3>Track Everything</h3>
+                <p>Log sales, expenses, and important market details to build your business history.</p>
+            </div>
+            <div class="step">
+                <span class="step-number">3</span>
+                <h3>Analyze & Grow</h3>
+                <p>Use insights to choose the most profitable markets and optimize your strategy.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section">
+    <div class="container">
+        <h2>Ready to Transform Your Market Business?</h2>
+        <p>Join thousands of vendors who are already using Rumfor Market Tracker to grow their business.</p>
+        <div class="cta-buttons">
+            <a href="/register" class="btn btn-primary btn-large">Start Free Trial</a>
+            <a href="/discover" class="btn btn-outline btn-large">Explore Markets</a>
+        </div>
+    </div>
+</div>
+
+<%- contentFor('scripts') %>
+<script>
+    // Simple animation for feature cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const featureCards = document.querySelectorAll('.feature-card');
+        featureCards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+    });
+</script>
+<%- endContent %>

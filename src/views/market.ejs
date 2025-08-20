@@ -1,6 +1,8 @@
+<%- contentFor('body') %>
 <div class="market-detail-header">
     <h1><%= market.name %></h1>
     <form action="/api/markets/<%= market.id %>/track" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button type="submit" class="btn-primary">Track this Market</button>
     </form>
 </div>
@@ -39,6 +41,7 @@
             <p><em>Loading messages...</em></p>
         </div>
         <form action="/api/markets/<%= market.id %>/messages" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <textarea name="content" placeholder="Ask a question or leave a comment..."></textarea>
             <button type="submit" class="btn-primary">Post</button>
         </form>
@@ -75,3 +78,4 @@
         }
     });
 </script>
+<%- endContent() %>
